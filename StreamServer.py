@@ -12,24 +12,25 @@ def main_thread_worker():
     place = 1
     while True:
         socketio.sleep(0.1)
-        time = datetime.datetime.now().strftime("%M:%S.%f")[:-3]
-        socketio.emit('update_scoreboard', {"lane_time3" : time}, namespace='/scoreboard')
+        time = datetime.datetime.now().strftime("%S.%f")[:-3]
+        update={}
+        update["current_event"] = int(datetime.datetime.now().second/10) + 1
+        update["current_heat"] = datetime.datetime.now().second%10 + 1
+        
+        for i in range(1,9):
+            update["lane_time%i"%i] = "%2i:%s" % (i, time)
+            update["lane_place%i"%i] = (datetime.datetime.now().second + i) % 8
+        socketio.emit('update_scoreboard', update, namespace='/scoreboard')
         place += 1
 
 @app.route('/')
 def index():
     return render_template('scoreboard.html')
 
-@socketio.on('start_scoreboard', namespace='/scoreboard')
-def handle_my_custom_event(json):
-    print('received scoreboard: ' + str(json))
-    emit('update_scoreboard', {"lane_time3" : "2:34.567", "lane_time4" : "5:43.122", 'data': 'Connected'}, namespace='/scoreboard')
-    print('sent message')
-
 @socketio.on('connect', namespace='/scoreboard')
 def test_connect():
     global main_thread
-    print("Got one scoreboard")
+    print("Scoreboard connected")
     if(main_thread is None):
         main_thread = socketio.start_background_task(target=main_thread_worker)
 
