@@ -7,21 +7,93 @@ app = Flask(__name__)
 socketio = SocketIO(app)
 
 main_thread = None
+event_heat_info = [' ',' ',' ',' ',' ',' ',' ',' ']
+lane_info = [[],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0]]
+
+def hex_to_digit(c):
+    c = c & 0x0F
+    c ^= 0x0F # Invert lower nybble
+    if (c > 9):
+        return ' '
+    return ("%i" % c)
+
+def parse_line(l):
+    global event_heat_info, lane_info
+    update={}
+
+    try:
+        # Byte 0 - Channel
+        c = l.pop(0)
+        running_finish = True if (c & 0x40) else False
+        format_display = True if (c & 0x01) else False
+        channel = ((c & 0x3E) >> 1) ^ 0x1F
+        
+        if (1 <= channel <= 10) and not format_display:
+            # This is a lane display of interest
+            while len(l):
+                c = l.pop(0)
+                lane_info[channel][(c >> 4) & 0x0F] = c
+            
+            lane = hex_to_digit(lane_info[channel][0])
+            place = hex_to_digit(lane_info[channel][1])
+            
+            time = hex_to_digit(lane_info[channel][2]) + hex_to_digit(lane_info[channel][3])
+            time += ':' if time.strip() else ' '
+            time += hex_to_digit(lane_info[channel][4]) + hex_to_digit(lane_info[channel][5])
+            time += '.' if time.strip() else ' '
+            time += hex_to_digit(lane_info[channel][6]) + hex_to_digit(lane_info[channel][7])
+
+            update["lane_time%i"%channel] = time
+            update["lane_place%i"%channel] = place
+            
+            #print("%2s:%s %s %s|" % (channel, lane, place, time), running_finish)
+        
+        if (channel == 12) and not format_display:
+            # Event / Heat
+            while len(l):
+                c = l.pop(0)
+                event_heat_info[(c >> 4) & 0x0F] = hex_to_digit(c)
+                
+            update["current_event"] = ''.join(event_heat_info[:3])
+            update["current_heat"] = ''.join(event_heat_info[-3:])
+        
+    except IndexError:
+        traceback.print_exc()
+        
+    finally:
+        #Output anything we got
+        if len(update):
+            socketio.emit('update_scoreboard', update, namespace='/scoreboard')
+
 
 def main_thread_worker():
-    place = 1
-    while True:
-        socketio.sleep(0.1)
-        time = datetime.datetime.now().strftime("%S.%f")[:-3]
-        update={}
-        update["current_event"] = int(datetime.datetime.now().second/10) + 1
-        update["current_heat"] = datetime.datetime.now().second%10 + 1
-        
-        for i in range(1,9):
-            update["lane_time%i"%i] = "%2i:%s" % (i, time)
-            update["lane_place%i"%i] = (datetime.datetime.now().second + i) % 8
-        socketio.emit('update_scoreboard', update, namespace='/scoreboard')
-        place += 1
+    with open('minicom.system5.20150708', 'rb') as f:
+        l = []
+        while True:
+            c = f.read(1)
+            if not c:
+                # End of file
+                break
+            c=c[0]
+
+            if (c & 0x80) or (len(l) > 8):
+                if len(l):
+                    parse_line(l)
+                    socketio.sleep(0.01)
+                l=[]
+                    
+            l.append(c)      
+            
 
 @app.route('/')
 def index():
