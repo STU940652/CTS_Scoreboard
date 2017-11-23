@@ -2,6 +2,8 @@
 from flask import Flask, render_template, Response
 from flask_socketio import SocketIO, send, emit
 import datetime
+import curses
+
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -19,6 +21,8 @@ lane_info = [[],
             [0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0]]
+
+stdscr = curses.initscr()
 
 def hex_to_digit(c):
     c = c & 0x0F
@@ -57,6 +61,9 @@ def parse_line(l):
             update["lane_place%i"%channel] = place
             
             #print("%2s:%s %s %s|" % (channel, lane, place, time), running_finish)
+            stdscr.addstr(channel+1, 0, " " * 20)
+            stdscr.addstr(channel+1, 0, "%4s: %s %s %s" % (channel, lane, place, time))
+            stdscr.refresh()
         
         if (channel == 12) and not format_display:
             # Event / Heat
@@ -66,7 +73,10 @@ def parse_line(l):
                 
             update["current_event"] = ''.join(event_heat_info[:3])
             update["current_heat"] = ''.join(event_heat_info[-3:])
-        
+
+            stdscr.addstr(0, 0, " Event:" +  update["current_event"] + " Heat:" + update["current_heat"] + "    ")
+
+            
     except IndexError:
         traceback.print_exc()
         
