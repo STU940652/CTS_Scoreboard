@@ -143,7 +143,7 @@ if __name__ == '__main__':
         for port, desc, id in serial.tools.list_ports.comports():
             print (port, dec, id)
         
-        socketio.run(app)
+        socketio.run(app, host="0.0.0.0")
     except:
         traceback.print_exc()
     finally:
