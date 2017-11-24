@@ -2,9 +2,13 @@
 from flask import Flask, render_template, Response
 from flask_socketio import SocketIO, send, emit
 import datetime
-import curses
+import traceback
+from ctypes import *
+import serial
+import serial.tools.list_ports
 
 meet_title = "State College vs Lock Haven and Dubois"
+serial_port = 'COM3'
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -23,8 +27,21 @@ lane_info = [[],
             [0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0]]
 
-stdscr = curses.initscr()
-
+## Windows stuff to move the cursor
+STD_OUTPUT_HANDLE = -11
+ 
+class COORD(Structure):
+    pass
+ 
+COORD._fields_ = [("X", c_short), ("Y", c_short)]
+ 
+def print_at(r, c, s):
+    h = windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
+    windll.kernel32.SetConsoleCursorPosition(h, COORD(c, r))
+ 
+    c = s.encode("windows-1252")
+    windll.kernel32.WriteConsoleA(h, c_char_p(c), len(c), None, None)        
+            
 def hex_to_digit(c):
     c = c & 0x0F
     c ^= 0x0F # Invert lower nybble
@@ -62,9 +79,8 @@ def parse_line(l):
             update["lane_place%i"%channel] = place
             
             #print("%2s:%s %s %s|" % (channel, lane, place, time), running_finish)
-            stdscr.addstr(channel+1, 0, " " * 20)
-            stdscr.addstr(channel+1, 0, "%4s: %s %s %s" % (channel, lane, place, time))
-            stdscr.refresh()
+            print_at(channel+1, 0, " " * 20)
+            print_at(channel+1, 0, "%4s: %s %s %s" % (channel, lane, place, time))
         
         if (channel == 12) and not format_display:
             # Event / Heat
@@ -75,7 +91,7 @@ def parse_line(l):
             update["current_event"] = ''.join(event_heat_info[:3])
             update["current_heat"] = ''.join(event_heat_info[-3:])
 
-            stdscr.addstr(0, 0, " Event:" +  update["current_event"] + " Heat:" + update["current_heat"] + "    ")
+            print_at(0, 0, " Event:" +  update["current_event"] + " Heat:" + update["current_heat"] + "    ")
 
             
     except IndexError:
@@ -88,7 +104,8 @@ def parse_line(l):
 
 
 def main_thread_worker():
-    with open('minicom.system5.20150708', 'rb') as f:
+    with serial.Serial('COM3', 9600, parity=serial.PARITY_EVEN) as f:
+    # with open('minicom.system5.20150708', 'rb') as f:
         l = []
         while True:
             c = f.read(1)
@@ -100,9 +117,8 @@ def main_thread_worker():
             if (c & 0x80) or (len(l) > 8):
                 if len(l):
                     parse_line(l)
-                    socketio.sleep(0.01)
+                    # socketio.sleep(0.01)
                 l=[]
-                    
             l.append(c)      
             
 
@@ -122,4 +138,14 @@ def test_connect():
         main_thread = socketio.start_background_task(target=main_thread_worker)
 
 if __name__ == '__main__':
-    socketio.run(app)
+    try:
+        print ("Available COM ports:")
+        for port, desc, id in serial.tools.list_ports.comports():
+            print (port, dec, id)
+        
+        socketio.run(app)
+    except:
+        traceback.print_exc()
+    finally:
+        input()
+        
