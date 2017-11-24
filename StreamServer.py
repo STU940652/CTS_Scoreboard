@@ -4,6 +4,7 @@ from flask_socketio import SocketIO, send, emit
 import datetime
 import curses
 
+meet_title = "State College vs Lock Haven and Dubois"
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -107,8 +108,12 @@ def main_thread_worker():
 
 @app.route('/')
 def index():
-    return render_template('scoreboard.html')
+    return render_template('scoreboard.html', meet_title=meet_title)
 
+@app.route('/test')
+def test():
+    return render_template('scoreboard.html', meet_title=meet_title, test_background=True)    
+    
 @socketio.on('connect', namespace='/scoreboard')
 def test_connect():
     global main_thread

@@ -104,7 +104,7 @@
 }
 
 .background{
-    color: #999999;
+    background-color: #999999;
     position: absolute;
     top: 0;
     left: 0;
@@ -156,12 +156,14 @@ function init() {
         </table>
     </div>
     <div class="content2">
-        <div class="content_meet_title">State College vs Lock Haven and Dubois</div>
-        <div class="content_meet_date"><span id="meet_datetime">December 2, 2017</span></div>
+        <div class="content_meet_title">{{ meet_title }}</div>
+        <div class="content_meet_date"><span id="meet_datetime"></span></div>
     </div>
  </div>
 <div class="background">
+{% if test_background %}
 <img src="{{url_for('static', filename='IMG_2481.PNG')}}" width="100%"/>
+{% endif %}
 </div>
 
 </body>
