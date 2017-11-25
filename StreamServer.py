@@ -104,22 +104,21 @@ def parse_line(l):
 
 
 def main_thread_worker():
-    with serial.Serial('COM3', 9600, parity=serial.PARITY_EVEN) as f:
+    with serial.Serial('COM3', 9600, parity=serial.PARITY_EVEN, timeout=0) as f:
     # with open('minicom.system5.20150708', 'rb') as f:
         l = []
         while True:
             c = f.read(1)
-            if not c:
-                # End of file
-                break
-            c=c[0]
+            if c:
+                c=c[0]
 
-            if (c & 0x80) or (len(l) > 8):
-                if len(l):
-                    parse_line(l)
-                    # socketio.sleep(0.01)
-                l=[]
-            l.append(c)      
+                if (c & 0x80) or (len(l) > 8):
+                    if len(l):
+                        parse_line(l)
+                    l=[]
+                l.append(c)
+            else:
+                socketio.sleep(0.01)
             
 
 @app.route('/')
@@ -141,7 +140,7 @@ if __name__ == '__main__':
     try:
         print ("Available COM ports:")
         for port, desc, id in serial.tools.list_ports.comports():
-            print (port, dec, id)
+            print (port, desc, id)
         
         socketio.run(app, host="0.0.0.0")
     except:
