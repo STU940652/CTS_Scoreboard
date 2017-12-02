@@ -7,6 +7,9 @@ from ctypes import *
 import serial
 import serial.tools.list_ports
 
+DEBUG = False
+#DEBUG = True
+
 meet_title = "State College vs Lock Haven and Dubois"
 serial_port = 'COM3'
 
@@ -26,6 +29,8 @@ lane_info = [[],
             [0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0],
             [0,0,0,0,0,0,0,0]]
+time_info = [0,0,0,0,0,0,0,0]
+running_time = '        '
 
 ## Windows stuff to move the cursor
 STD_OUTPUT_HANDLE = -11
@@ -50,7 +55,7 @@ def hex_to_digit(c):
     return ("%i" % c)
 
 def parse_line(l):
-    global event_heat_info, lane_info
+    global event_heat_info, lane_info, time_info, running_time
     update={}
 
     try:
@@ -70,7 +75,7 @@ def parse_line(l):
             place = hex_to_digit(lane_info[channel][1])
             
             if running_finish:
-                time = '        '
+                time = running_time
             else:
                 time = hex_to_digit(lane_info[channel][2]) + hex_to_digit(lane_info[channel][3])
                 time += ':' if time.strip() else ' '
@@ -84,6 +89,16 @@ def parse_line(l):
             #print("%2s:%s %s %s|" % (channel, lane, place, time), running_finish)
             print_at(channel+1, 0, " " * 20)
             print_at(channel+1, 0, "%4s: %s %s %s" % (channel, lane, place, time))
+
+        if (channel == 0) and not format_display:
+            while len(l):
+                c = l.pop(0)
+                time_info[(c >> 4) & 0x0F] = c
+            running_time = hex_to_digit(time_info[2]) + hex_to_digit(time_info[3])
+            running_time += ':' if running_time.strip() else ' '
+            running_time += hex_to_digit(time_info[4]) + hex_to_digit(time_info[5])
+            running_time += '.' if running_time.strip() else ' '
+            running_time += hex_to_digit(time_info[6]) + hex_to_digit(time_info[7])
         
         if (channel == 12) and not format_display:
             # Event / Heat
@@ -109,11 +124,15 @@ def parse_line(l):
 def main_thread_worker():
     with serial.Serial('COM3', 9600, timeout=0) as f:
     # with open('minicom.system5.20150708', 'rb') as f:
+        if DEBUG:
+            j = open("log.txt", "at")
         l = []
         while True:
             c = f.read(1)
             if c:
                 c=c[0]
+                if DEBUG:
+                    j.write ("%02X " % int(c))
 
                 if (c & 0x80) or (len(l) > 8):
                     if len(l):
