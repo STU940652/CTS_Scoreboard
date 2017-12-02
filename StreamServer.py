@@ -31,6 +31,7 @@ lane_info = [[],
             [0,0,0,0,0,0,0,0]]
 time_info = [0,0,0,0,0,0,0,0]
 running_time = '        '
+channel_running = [False for i in range(10)]
 
 ## Windows stuff to move the cursor
 STD_OUTPUT_HANDLE = -11
@@ -66,6 +67,7 @@ def parse_line(l):
         channel = ((c & 0x3E) >> 1) ^ 0x1F
         
         if (1 <= channel <= 10) and not format_display:
+            channel_running[channel-1] = running_finish
             # This is a lane display of interest
             while len(l):
                 c = l.pop(0)
@@ -91,6 +93,7 @@ def parse_line(l):
             print_at(channel+1, 0, "%4s: %s %s %s" % (channel, lane, place, time))
 
         if (channel == 0) and not format_display:
+            # Running time
             while len(l):
                 c = l.pop(0)
                 time_info[(c >> 4) & 0x0F] = c
@@ -99,6 +102,10 @@ def parse_line(l):
             running_time += hex_to_digit(time_info[4]) + hex_to_digit(time_info[5])
             running_time += '.' if running_time.strip() else ' '
             running_time += hex_to_digit(time_info[6]) + hex_to_digit(time_info[7])
+            for i in range(10):
+                if channel_running[i]:
+                    update["lane_time%i"%(i+1)] = running_time
+                    
         
         if (channel == 12) and not format_display:
             # Event / Heat
