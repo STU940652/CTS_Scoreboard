@@ -69,11 +69,14 @@ def parse_line(l):
             lane = hex_to_digit(lane_info[channel][0])
             place = hex_to_digit(lane_info[channel][1])
             
-            time = hex_to_digit(lane_info[channel][2]) + hex_to_digit(lane_info[channel][3])
-            time += ':' if time.strip() else ' '
-            time += hex_to_digit(lane_info[channel][4]) + hex_to_digit(lane_info[channel][5])
-            time += '.' if time.strip() else ' '
-            time += hex_to_digit(lane_info[channel][6]) + hex_to_digit(lane_info[channel][7])
+            if running_finish:
+                time = '        '
+            else:
+                time = hex_to_digit(lane_info[channel][2]) + hex_to_digit(lane_info[channel][3])
+                time += ':' if time.strip() else ' '
+                time += hex_to_digit(lane_info[channel][4]) + hex_to_digit(lane_info[channel][5])
+                time += '.' if time.strip() else ' '
+                time += hex_to_digit(lane_info[channel][6]) + hex_to_digit(lane_info[channel][7])
 
             update["lane_time%i"%channel] = time
             update["lane_place%i"%channel] = place
@@ -104,7 +107,7 @@ def parse_line(l):
 
 
 def main_thread_worker():
-    with serial.Serial('COM3', 9600, parity=serial.PARITY_EVEN, timeout=0) as f:
+    with serial.Serial('COM3', 9600, timeout=0) as f:
     # with open('minicom.system5.20150708', 'rb') as f:
         l = []
         while True:
