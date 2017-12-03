@@ -102,9 +102,11 @@ def parse_line(l):
             running_time += hex_to_digit(time_info[4]) + hex_to_digit(time_info[5])
             running_time += '.' if running_time.strip() else ' '
             running_time += hex_to_digit(time_info[6]) + hex_to_digit(time_info[7])
-            for i in range(10):
-                if channel_running[i]:
-                    update["lane_time%i"%(i+1)] = running_time
+            if False:
+                # This makes too much traffic
+                for i in range(10):
+                    if channel_running[i]:
+                        update["lane_time%i"%(i+1)] = running_time
                     
         
         if (channel == 12) and not format_display:
