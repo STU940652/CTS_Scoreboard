@@ -6,12 +6,16 @@ import traceback
 from ctypes import *
 import serial
 import serial.tools.list_ports
+import re
+import time
 
 DEBUG = False
 #DEBUG = True
 
 meet_title = "State College vs Lock Haven and Dubois"
 serial_port = 'COM3'
+in_file = None
+out_file = None
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -77,7 +81,7 @@ def parse_line(l):
             place = hex_to_digit(lane_info[channel][1])
             
             if running_finish:
-                time = running_time
+                time = '        '
             else:
                 time = hex_to_digit(lane_info[channel][2]) + hex_to_digit(lane_info[channel][3])
                 time += ':' if time.strip() else ' '
@@ -88,7 +92,6 @@ def parse_line(l):
             update["lane_time%i"%channel] = time
             update["lane_place%i"%channel] = place
             
-            #print("%2s:%s %s %s|" % (channel, lane, place, time), running_finish)
             print_at(channel+1, 0, " " * 20)
             print_at(channel+1, 0, "%4s: %s %s %s" % (channel, lane, place, time))
 
@@ -102,13 +105,8 @@ def parse_line(l):
             running_time += hex_to_digit(time_info[4]) + hex_to_digit(time_info[5])
             running_time += '.' if running_time.strip() else ' '
             running_time += hex_to_digit(time_info[6]) + hex_to_digit(time_info[7])
-            if False:
-                # This makes too much traffic
-                for i in range(10):
-                    if channel_running[i]:
-                        update["lane_time%i"%(i+1)] = running_time
-                    
-        
+            update["running_time"] = running_time
+
         if (channel == 12) and not format_display:
             # Event / Heat
             while len(l):
@@ -120,7 +118,6 @@ def parse_line(l):
 
             print_at(0, 0, " Event:" +  update["current_event"] + " Heat:" + update["current_heat"] + "    ")
 
-            
     except IndexError:
         traceback.print_exc()
         
@@ -131,25 +128,47 @@ def parse_line(l):
 
 
 def main_thread_worker():
-    with serial.Serial('COM3', 9600, timeout=0) as f:
-    # with open('minicom.system5.20150708', 'rb') as f:
-        if DEBUG:
-            j = open("log.txt", "at")
-        l = []
-        while True:
-            c = f.read(1)
-            if c:
-                c=c[0]
-                if DEBUG:
-                    j.write ("%02X " % int(c))
+    if in_file:
+        delay = 0.0
+        with open(in_file, 'rt') as f:
+            if out_file:
+                j = open(out_file, "at")
+            l = []
+            for d in re.finditer("([0-9a-fA-F]{2}) *", f.read()):
+                c = int(d.group(1), 16)
+                if c:
+                    if out_file:
+                        j.write ("%02X " % int(c))
 
-                if (c & 0x80) or (len(l) > 8):
-                    if len(l):
-                        parse_line(l)
-                    l=[]
-                l.append(c)
-            else:
-                socketio.sleep(0.01)
+                    if (c & 0x80) or (len(l) > 8):
+                        if len(l):
+                            parse_line(l)
+                        l=[]
+                    l.append(c)
+                if delay > (0.1):
+                    delay = 0
+                    socketio.sleep(0.1) # 9600 = about 1ms per character
+                else:
+                    delay += 1/9600.0
+    else:
+        with serial.Serial(serial_port, 9600, timeout=0) as f:
+            if out_file:
+                j = open(out_file, "at")
+            l = []
+            while True:
+                c = f.read(1)
+                if c:
+                    c=c[0]
+                    if out_file:
+                        j.write ("%02X " % int(c))
+
+                    if (c & 0x80) or (len(l) > 8):
+                        if len(l):
+                            parse_line(l)
+                        l=[]
+                    l.append(c)
+                else:
+                    socketio.sleep(0.01)
             
 
 @app.route('/')
@@ -168,11 +187,28 @@ def test_connect():
         main_thread = socketio.start_background_task(target=main_thread_worker)
 
 if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Provide HTML rendering of Coloado Timing System data.')
+    parser.add_argument('--port', '-p', action = 'store', default = 'COM3', 
+        help='Serial port input from CTS scoreboard')
+    parser.add_argument('--in', '-i', action = 'store', default = '', dest='in_file',
+        help='Input file to use instead of serial port')
+    parser.add_argument('--out', '-o', action = 'store', default = '', 
+        help='Output file to dump data')
+    parser.add_argument('--portlist', '-l', action = 'store_const', const=True, default = False,
+        help='Output file to dump data')        
+    args = parser.parse_args()
+
     try:
-        print ("Available COM ports:")
-        for port, desc, id in serial.tools.list_ports.comports():
-            print (port, desc, id)
+        if (args.portlist):
+            print ("Available COM ports:")
+            for port, desc, id in serial.tools.list_ports.comports():
+                print (port, desc, id)
         
+        serial_port = args.port
+        in_file = args.in_file
+        out_file = args.out
         socketio.run(app, host="0.0.0.0")
     except:
         traceback.print_exc()
