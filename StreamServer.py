@@ -12,7 +12,7 @@ import time
 DEBUG = False
 #DEBUG = True
 
-meet_title = "State College vs Lock Haven and Dubois"
+meet_title = "State College vs Bellefonte vs Juniata Valley"
 serial_port = 'COM3'
 in_file = None
 out_file = None
@@ -59,9 +59,11 @@ def hex_to_digit(c):
         return ' '
     return ("%i" % c)
 
+update={}
+next_update = datetime.datetime.now()
+
 def parse_line(l):
-    global event_heat_info, lane_info, time_info, running_time
-    update={}
+    global event_heat_info, lane_info, time_info, running_time, update, next_update
 
     try:
         # Byte 0 - Channel
@@ -81,7 +83,7 @@ def parse_line(l):
             place = hex_to_digit(lane_info[channel][1])
             
             if running_finish:
-                time = '        '
+                time = running_time # '        '
             else:
                 time = hex_to_digit(lane_info[channel][2]) + hex_to_digit(lane_info[channel][3])
                 time += ':' if time.strip() else ' '
@@ -123,8 +125,10 @@ def parse_line(l):
         
     finally:
         #Output anything we got
-        if len(update):
+        if len(update) and (datetime.datetime.now() > next_update):
             socketio.emit('update_scoreboard', update, namespace='/scoreboard')
+            next_update = datetime.datetime.now() + datetime.timedelta(seconds=0.2)
+            update.clear()
 
 
 def main_thread_worker():
