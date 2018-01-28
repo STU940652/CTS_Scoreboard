@@ -201,7 +201,7 @@ if __name__ == '__main__':
     parser.add_argument('--out', '-o', action = 'store', default = '', 
         help='Output file to dump data')
     parser.add_argument('--portlist', '-l', action = 'store_const', const=True, default = False,
-        help='Output file to dump data')        
+        help='List of available serial ports')        
     args = parser.parse_args()
 
     try:
