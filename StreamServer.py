@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from flask import Flask, render_template, Response
+from flask import Flask, render_template, Response, request
 from flask_socketio import SocketIO, send, emit
 import datetime
 import traceback
@@ -8,12 +8,16 @@ import serial
 import serial.tools.list_ports
 import re
 import time
+import json
 
 DEBUG = False
 #DEBUG = True
+settings_file = './settings.json'
 
-meet_title = "State College vs Bellefonte vs Juniata Valley"
-serial_port = 'COM3'
+settings = {
+    'meet_title': '',
+    'serial_port': 'COM1'
+    }
 in_file = None
 out_file = None
 
@@ -36,6 +40,11 @@ lane_info = [[],
 time_info = [0,0,0,0,0,0,0,0]
 running_time = '        '
 channel_running = [False for i in range(10)]
+
+def load_settings():
+    global settings
+    with open(settings_file, "rt") as f:
+        settings.update(json.load(f))
 
 ## Windows stuff to move the cursor
 STD_OUTPUT_HANDLE = -11
@@ -155,7 +164,7 @@ def main_thread_worker():
                 else:
                     delay += 1/9600.0
     else:
-        with serial.Serial(serial_port, 9600, timeout=0) as f:
+        with serial.Serial(settings['serial_port'], 9600, timeout=0) as f:
             if out_file:
                 j = open(out_file, "at")
             l = []
@@ -174,15 +183,6 @@ def main_thread_worker():
                 else:
                     socketio.sleep(0.01)
             
-
-@app.route('/')
-def index():
-    return render_template('scoreboard.html', meet_title=meet_title)
-
-@app.route('/test')
-def test():
-    return render_template('scoreboard.html', meet_title=meet_title, test_background=True)    
-    
 @socketio.on('connect', namespace='/scoreboard')
 def test_connect():
     global main_thread
@@ -190,11 +190,45 @@ def test_connect():
     if(main_thread is None):
         main_thread = socketio.start_background_task(target=main_thread_worker)
 
+# Scoreboard Templates
+@app.route('/')
+def route_index():
+    return render_template('scoreboard.html', meet_title=settings['meet_title'])
+
+@app.route('/test')
+def route_test():
+    return render_template('scoreboard.html', meet_title=settings['meet_title'], test_background=True)    
+    
+@app.route('/settings', methods=['POST', 'GET'])
+def route_settings():
+    global settings
+    if request.method == 'POST':
+        modified = False
+        for k in settings.keys(): 
+            if k in request.form and settings[k]!=request.form.get(k):
+                settings[k]=request.form.get(k)
+                modified = True
+        
+        if modified:
+            with open(settings_file, "wt") as f:
+                json.dump(settings, f, sort_keys=True, indent=4)
+                
+    comm_port_list = [(port, "%s: %s" % (port,desc)) for port, desc, id in serial.tools.list_ports.comports()]
+    if settings['serial_port'] not in [port for port,desc in comm_port_list]:
+        comm_port_list.insert(0, (settings['serial_port'], settings['serial_port']))
+        
+    return render_template('settings.html', 
+                meet_title=settings['meet_title'], 
+                serial_port=settings['serial_port'],
+                serial_port_list=comm_port_list)
+    
 if __name__ == '__main__':
     import argparse
+    
+    load_settings()
 
     parser = argparse.ArgumentParser(description='Provide HTML rendering of Coloado Timing System data.')
-    parser.add_argument('--port', '-p', action = 'store', default = 'COM3', 
+    parser.add_argument('--port', '-p', action = 'store', default = '', 
         help='Serial port input from CTS scoreboard')
     parser.add_argument('--in', '-i', action = 'store', default = '', dest='in_file',
         help='Input file to use instead of serial port')
@@ -209,8 +243,8 @@ if __name__ == '__main__':
             print ("Available COM ports:")
             for port, desc, id in serial.tools.list_ports.comports():
                 print (port, desc, id)
-        
-        serial_port = args.port
+        if (args.port):
+            settings['serial_port'] = args.port
         in_file = args.in_file
         out_file = args.out
         socketio.run(app, host="0.0.0.0")
