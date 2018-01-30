@@ -16,7 +16,9 @@ settings_file = './settings.json'
 
 settings = {
     'meet_title': '',
-    'serial_port': 'COM1'
+    'serial_port': 'COM1',
+    'username': 'admin',
+    'password': 'password'
     }
 in_file = None
 out_file = None
@@ -216,11 +218,12 @@ def route_settings():
     comm_port_list = [(port, "%s: %s" % (port,desc)) for port, desc, id in serial.tools.list_ports.comports()]
     if settings['serial_port'] not in [port for port,desc in comm_port_list]:
         comm_port_list.insert(0, (settings['serial_port'], settings['serial_port']))
-        
+ 
     return render_template('settings.html', 
                 meet_title=settings['meet_title'], 
                 serial_port=settings['serial_port'],
-                serial_port_list=comm_port_list)
+                serial_port_list=comm_port_list,
+                user_name=settings['username'])
     
 if __name__ == '__main__':
     import argparse

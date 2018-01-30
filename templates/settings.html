@@ -1,0 +1,171 @@
+<html>
+<link href="https://fonts.googleapis.com/css?family=Overpass+Mono" rel="stylesheet">
+<style>
+
+// HEX: #cfe0e8
+// HEX: #b7d7e8
+// HEX: #87bdd8
+// HEX: #daebe8
+
+
+.content{
+    #color: #FFFFFF;
+    #font-size: 26px;
+    #font-weight: bold;
+    #text-shadow: -1px -1px 1px #000, 1px 1px 1px #000;
+    width: 1920;
+    height: 1080;
+    position: relative;
+    z-index: 100;
+}
+
+.content2{
+    width: 800px;
+    # position: relative;
+    margin-left: 30px;
+    position: relative;
+    top: 950;
+}
+
+.content_meet_title{
+    font-family: 'Overpass Mono', monospace;
+    font-size: 30px;
+    color: #000000;
+    background-color: #87bdd8;
+    padding-top: 5px;
+    padding-left: 30px;
+}
+
+.content_meet_date{
+    font-family: 'Overpass Mono', monospace;
+    font-size: 26px;
+    color: #000000;
+    background-color: #daebe8;
+    padding-left: 30px;
+}
+
+.content_event_number{
+    font-family: 'Overpass Mono', monospace;
+    font-size: 32px;
+    color: #000000;
+    background-color: #9d238f;
+    width: 370px;
+    float: left;
+    padding-left: 30px;
+}
+
+.content_heat_number{
+    font-family: 'Overpass Mono', monospace;
+    font-size: 32px;
+    color: #000000;
+    background-color: #9d238f;
+    width: 400px;
+    float: left;
+}
+
+.scoreboard{
+    font-family: 'Overpass Mono', monospace;
+    font-size: 32px;
+    width: 500px;
+    color: #000000;
+    position: absolute;
+    top: 40;
+    left: 1380;
+}
+
+.scoreboard_title{
+    font-family: 'Overpass Mono', monospace;
+    color: #000000;
+    font-size: 32px;
+    background-color: #87bdd8;
+    width: 100%;
+    text-align: center;
+}
+
+.scoreboard_header{
+    font-family: 'Overpass Mono', monospace;
+    color: #000000;
+    font-size: 32px;
+    background-color: #daebe8;
+}
+
+.scoreboard_row_odd{
+    font-family: 'Overpass Mono', monospace;
+    color: #000000;
+    font-size: 32px;
+    background-color: #b7d7e8;
+}
+
+.scoreboard_row_eve{
+    font-family: 'Overpass Mono', monospace;
+    color: #000000;
+    font-size: 32px;
+    background-color: #cfe0e8;
+}
+
+.background{
+    background-color: #999999;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1920;
+    height: 1080;
+    z-index: -100;
+}
+</style>
+<script>
+function password_check(form) {
+    document.getElementById('password_submit').style.visibility='visible';
+    
+    if ((form.password1.value == form.password2.value) && (form.password1.value.length > 3)) {
+        document.getElementById('password_submit').disabled = false;
+    } else {
+        document.getElementById('password_submit').disabled = true;
+    }
+}
+</script>
+
+<body style="margin:0px" onload="">
+<div style="width:800px; margin:0 auto">
+<h1>CTS Scoreboard</h1>
+<h2>Settings</h2>
+<form action="/settings" method="POST">
+    <p>Meet Title:<br/>
+    <input name="meet_title" value="{{ meet_title }}" size="100" oninput="document.getElementById('meet_title_submit').style.visibility='visible';"></input>
+    <input id="meet_title_submit" type="submit" value="Update" style="visibility:hidden">
+    </p>
+</form>
+<form action="/settings" method="POST">
+    <p>Serial Port:<br/>
+    <select name="serial_port" style="width:400" oninput="document.getElementById('serial_port_submit').style.visibility='visible';">
+    {% for port, desc in serial_port_list %}
+        {% if port == serial_port %}
+            <option value="{{port}}" selected>{{desc}}</option>
+        {% else %}
+            <option value="{{port}}">{{desc}}</option>
+        {% endif %}
+        <dt>{{ key|e }}</dt>
+        <dd>{{ value|e }}</dd>
+    {% endfor %}
+    </select>
+    <input id="serial_port_submit" type="submit" value="Update" style="visibility:hidden">
+    </p>
+</form>
+<form action="/settings" method="POST">
+    <p>Username:<br/>
+    <input name="user_name" value="{{ user_name }}" size="50" oninput="document.getElementById('user_name_submit').style.visibility='visible';"></input>
+    <input id="user_name_submit" type="submit" value="Update" style="visibility:hidden">
+    </p>
+</form>
+<form action="/settings" method="POST">
+    <p>Change Password:<br/>
+    <input name="password1" type="password" size="50" oninput="password_check(this.form);"></input><br/>
+    Verify Password:</br>
+    <input name="password2" type="password" size="50" oninput="password_check(this.form);"></input>
+    <input id="password_submit" type="submit" value="Update" style="visibility:hidden" disabled>
+    </p>
+</form>
+</div>
+
+</body>
+</html>
