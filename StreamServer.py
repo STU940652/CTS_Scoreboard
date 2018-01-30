@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-from flask import Flask, render_template, Response, request
+from flask import Flask, render_template, Response, request, abort, redirect
+import flask_login
 from flask_socketio import SocketIO, send, emit
 import datetime
 import traceback
@@ -24,6 +25,11 @@ in_file = None
 out_file = None
 
 app = Flask(__name__)
+# config
+app.config.update(
+    DEBUG = False,
+    SECRET_KEY = 'rimnqiuqnewiornhf7nfwenjmqvliwynhtmlfnlsklrmqwe'
+)
 socketio = SocketIO(app)
 
 main_thread = None
@@ -185,6 +191,28 @@ def main_thread_worker():
                 else:
                     socketio.sleep(0.01)
             
+# flask-login
+login_manager = flask_login.LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
+
+# simple user model
+class User(flask_login.UserMixin):
+
+    def __init__(self, id):
+        self.id = id
+        self.name = settings['username']
+        self.password = settings['password']
+        
+    def __repr__(self):
+        return "%d/%s" % (self.id, self.name)
+
+
+# create the user       
+user = User(0)
+            
+            
 @socketio.on('connect', namespace='/scoreboard')
 def test_connect():
     global main_thread
@@ -193,7 +221,7 @@ def test_connect():
         main_thread = socketio.start_background_task(target=main_thread_worker)
 
 # Scoreboard Templates
-@app.route('/')
+@app.route('/overlay_1080p')
 def route_index():
     return render_template('scoreboard.html', meet_title=settings['meet_title'])
 
@@ -202,6 +230,7 @@ def route_test():
     return render_template('scoreboard.html', meet_title=settings['meet_title'], test_background=True)    
     
 @app.route('/settings', methods=['POST', 'GET'])
+@flask_login.login_required
 def route_settings():
     global settings
     if request.method == 'POST':
@@ -224,6 +253,47 @@ def route_settings():
                 serial_port=settings['serial_port'],
                 serial_port_list=comm_port_list,
                 user_name=settings['username'])
+    
+# somewhere to login
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == 'POST':
+        if ((request.form['username']==settings['username']) and
+            (request.form['password']==settings['password'])):        
+            user = User(0)
+            flask_login.login_user(user)
+            return redirect(request.args.get("next"))
+        else:
+            return abort(401)
+    else:
+        return Response('''
+        <form action="" method="post">
+            <p><input type=text name=username>
+            <p><input type=password name=password>
+            <p><input type=submit value=Login>
+        </form>
+        ''')
+
+
+# somewhere to logout
+@app.route("/logout")
+@flask_login.login_required
+def logout():
+    flask_login.logout_user()
+    return Response('<p>Logged out</p>')
+
+
+# handle login failed
+@app.errorhandler(401)
+def page_not_found(e):
+    return Response('<p>Login failed</p>')
+    
+    
+# callback to reload the user object        
+@login_manager.user_loader
+def load_user(userid):
+    return User(userid)
+    
     
 if __name__ == '__main__':
     import argparse

@@ -1,118 +1,5 @@
 <html>
-<link href="https://fonts.googleapis.com/css?family=Overpass+Mono" rel="stylesheet">
-<style>
 
-// HEX: #cfe0e8
-// HEX: #b7d7e8
-// HEX: #87bdd8
-// HEX: #daebe8
-
-
-.content{
-    #color: #FFFFFF;
-    #font-size: 26px;
-    #font-weight: bold;
-    #text-shadow: -1px -1px 1px #000, 1px 1px 1px #000;
-    width: 1920;
-    height: 1080;
-    position: relative;
-    z-index: 100;
-}
-
-.content2{
-    width: 800px;
-    # position: relative;
-    margin-left: 30px;
-    position: relative;
-    top: 950;
-}
-
-.content_meet_title{
-    font-family: 'Overpass Mono', monospace;
-    font-size: 30px;
-    color: #000000;
-    background-color: #87bdd8;
-    padding-top: 5px;
-    padding-left: 30px;
-}
-
-.content_meet_date{
-    font-family: 'Overpass Mono', monospace;
-    font-size: 26px;
-    color: #000000;
-    background-color: #daebe8;
-    padding-left: 30px;
-}
-
-.content_event_number{
-    font-family: 'Overpass Mono', monospace;
-    font-size: 32px;
-    color: #000000;
-    background-color: #9d238f;
-    width: 370px;
-    float: left;
-    padding-left: 30px;
-}
-
-.content_heat_number{
-    font-family: 'Overpass Mono', monospace;
-    font-size: 32px;
-    color: #000000;
-    background-color: #9d238f;
-    width: 400px;
-    float: left;
-}
-
-.scoreboard{
-    font-family: 'Overpass Mono', monospace;
-    font-size: 32px;
-    width: 500px;
-    color: #000000;
-    position: absolute;
-    top: 40;
-    left: 1380;
-}
-
-.scoreboard_title{
-    font-family: 'Overpass Mono', monospace;
-    color: #000000;
-    font-size: 32px;
-    background-color: #87bdd8;
-    width: 100%;
-    text-align: center;
-}
-
-.scoreboard_header{
-    font-family: 'Overpass Mono', monospace;
-    color: #000000;
-    font-size: 32px;
-    background-color: #daebe8;
-}
-
-.scoreboard_row_odd{
-    font-family: 'Overpass Mono', monospace;
-    color: #000000;
-    font-size: 32px;
-    background-color: #b7d7e8;
-}
-
-.scoreboard_row_eve{
-    font-family: 'Overpass Mono', monospace;
-    color: #000000;
-    font-size: 32px;
-    background-color: #cfe0e8;
-}
-
-.background{
-    background-color: #999999;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 1920;
-    height: 1080;
-    z-index: -100;
-}
-</style>
 <script>
 function password_check(form) {
     document.getElementById('password_submit').style.visibility='visible';
@@ -162,10 +49,12 @@ function password_check(form) {
     <input name="password1" type="password" size="50" oninput="password_check(this.form);"></input><br/>
     Verify Password:</br>
     <input name="password2" type="password" size="50" oninput="password_check(this.form);"></input>
-    <input id="password_submit" type="submit" value="Update" style="visibility:hidden" disabled>
+    <input id="password_submit" type="submit" value="Update" style="visibility:hidden" disabled />
     </p>
 </form>
+<form action="/logout">
+    <input type="submit" value="Log Out"/>
+</form>
 </div>
-
 </body>
 </html>
