@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from flask import Flask, render_template, Response, request, abort, redirect
+from flask import Flask, render_template, Response, request, abort, redirect, url_for
 import flask_login
 from flask_socketio import SocketIO, send, emit
 import datetime
@@ -194,7 +194,7 @@ def main_thread_worker():
 # flask-login
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = "login"
+login_manager.login_view = "route_login"
 
 
 # simple user model
@@ -222,11 +222,11 @@ def test_connect():
 
 # Scoreboard Templates
 @app.route('/overlay_1080p')
-def route_index():
+def route_overlay_1080p():
     return render_template('scoreboard.html', meet_title=settings['meet_title'])
 
 @app.route('/test')
-def route_test():
+def route_overlay_test():
     return render_template('scoreboard.html', meet_title=settings['meet_title'], test_background=True)    
     
 @app.route('/settings', methods=['POST', 'GET'])
@@ -256,7 +256,7 @@ def route_settings():
     
 # somewhere to login
 @app.route("/login", methods=["GET", "POST"])
-def login():
+def route_login():
     if request.method == 'POST':
         if ((request.form['username']==settings['username']) and
             (request.form['password']==settings['password'])):        
@@ -266,28 +266,42 @@ def login():
         else:
             return abort(401)
     else:
-        return Response('''
-        <form action="" method="post">
-            <p><input type=text name=username>
-            <p><input type=password name=password>
-            <p><input type=submit value=Login>
-        </form>
-        ''')
+        return render_template('login.html')
 
 
 # somewhere to logout
 @app.route("/logout")
 @flask_login.login_required
-def logout():
+def route_logout():
     flask_login.logout_user()
-    return Response('<p>Logged out</p>')
+    return redirect('/')
 
 
 # handle login failed
 @app.errorhandler(401)
 def page_not_found(e):
-    return Response('<p>Login failed</p>')
+    return render_template('login.html', login_failed=True)
     
+
+def has_no_empty_params(rule):
+    defaults = rule.defaults if rule.defaults is not None else ()
+    arguments = rule.arguments if rule.arguments is not None else ()
+    return len(defaults) >= len(arguments)
+
+@app.route("/")
+def route_site_map():
+    links = []
+    for rule in app.url_map.iter_rules():
+        # Filter out rules we can't navigate to in a browser
+        # and rules that require parameters
+        if "GET" in rule.methods and has_no_empty_params(rule):
+            url = url_for(rule.endpoint, **(rule.defaults or {}))
+            title = rule.endpoint.replace("_"," ")
+            if title.startswith('route '):
+                title = title[6:]
+            links.append((url, title.title()))
+    # links is now a list of url, endpoint tuple
+    return render_template('site_map.html', links=links)
     
 # callback to reload the user object        
 @login_manager.user_loader

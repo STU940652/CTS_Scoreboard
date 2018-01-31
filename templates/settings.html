@@ -31,8 +31,6 @@ function password_check(form) {
         {% else %}
             <option value="{{port}}">{{desc}}</option>
         {% endif %}
-        <dt>{{ key|e }}</dt>
-        <dd>{{ value|e }}</dd>
     {% endfor %}
     </select>
     <input id="serial_port_submit" type="submit" value="Update" style="visibility:hidden">

@@ -1,0 +1,16 @@
+<html>
+<body style="margin:0px" onload="">
+<div style="width:800px; margin:0 auto">
+<h1>CTS Scoreboard</h1>
+{% if login_failed %}
+<p>Login failed</p>
+{% endif %}
+<h2>Login</h2>
+<form action="" method="post">
+    <p><input type=text name=username>
+    <p><input type=password name=password>
+    <p><input type=submit value=Login>
+</form>
+</div>
+</body>
+</html>

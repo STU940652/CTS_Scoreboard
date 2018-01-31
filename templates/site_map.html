@@ -1,0 +1,14 @@
+<html>
+
+
+
+<body style="margin:0px" onload="">
+<div style="width:800px; margin:0 auto">
+<h1>CTS Scoreboard</h1>
+<h2>Site Map</h2>
+{% for url, route in links %}
+    <p><a href="{{ url}}">{{route}}</a></p>
+{% endfor %}
+</div>
+</body>
+</html>
