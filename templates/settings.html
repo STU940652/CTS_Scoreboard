@@ -1,58 +1,140 @@
 <html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+<meta name="description" content="">
+<meta name="author" content="">
+<!--<link rel="icon" href="../../favicon.ico">-->
+
+<title>CTS Scoreboard: Settings</title>
+
+<!-- Bootstrap core CSS -->
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+<!-- Custom styles for this template -->
+<!-- <link href="jumbotron-narrow.css" rel="stylesheet"> -->
+
+<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+<![endif]-->
+</head>
 
 <script>
 function password_check(form) {
-    document.getElementById('password_submit').style.visibility='visible';
+    if (form.password1.value.length > 3) {
+        document.getElementById('password_verify').style.visibility='visible';
     
-    if ((form.password1.value == form.password2.value) && (form.password1.value.length > 3)) {
-        document.getElementById('password_submit').disabled = false;
+        if (form.password1.value == form.password2.value) {
+            document.getElementById('password_submit').disabled = false;
+        } else {
+            document.getElementById('password_submit').disabled = true;
+        }
     } else {
+        document.getElementById('password_verify').style.visibility='hidden';
         document.getElementById('password_submit').disabled = true;
     }
 }
 </script>
 
 <body style="margin:0px" onload="">
-<div style="width:800px; margin:0 auto">
-<h1>CTS Scoreboard</h1>
-<h2>Settings</h2>
-<form action="/settings" method="POST">
-    <p>Meet Title:<br/>
-    <input name="meet_title" value="{{ meet_title }}" size="100" oninput="document.getElementById('meet_title_submit').style.visibility='visible';"></input>
-    <input id="meet_title_submit" type="submit" value="Update" style="visibility:hidden">
-    </p>
-</form>
-<form action="/settings" method="POST">
-    <p>Serial Port:<br/>
-    <select name="serial_port" style="width:400" oninput="document.getElementById('serial_port_submit').style.visibility='visible';">
-    {% for port, desc in serial_port_list %}
-        {% if port == serial_port %}
-            <option value="{{port}}" selected>{{desc}}</option>
-        {% else %}
-            <option value="{{port}}">{{desc}}</option>
-        {% endif %}
-    {% endfor %}
-    </select>
-    <input id="serial_port_submit" type="submit" value="Update" style="visibility:hidden">
-    </p>
-</form>
-<form action="/settings" method="POST">
-    <p>Username:<br/>
-    <input name="user_name" value="{{ user_name }}" size="50" oninput="document.getElementById('user_name_submit').style.visibility='visible';"></input>
-    <input id="user_name_submit" type="submit" value="Update" style="visibility:hidden">
-    </p>
-</form>
-<form action="/settings" method="POST">
-    <p>Change Password:<br/>
-    <input name="password1" type="password" size="50" oninput="password_check(this.form);"></input><br/>
-    Verify Password:</br>
-    <input name="password2" type="password" size="50" oninput="password_check(this.form);"></input>
-    <input id="password_submit" type="submit" value="Update" style="visibility:hidden" disabled />
-    </p>
-</form>
-<form action="/logout">
-    <input type="submit" value="Log Out"/>
-</form>
+
+<div class="container">
+    <div class="header clearfix">
+        <h1>CTS Scoreboard</h1>
+        <h2>Settings</h2>
+    </div>
+
+
+    <form action="/settings" method="POST">
+        <div class="input-group">
+            <label for="meet_title">Title</label>
+            <div class="input-group">
+                <input id="meet_title"
+                        name="meet_title"
+                        value="{{ meet_title }}" 
+                        class="form-control" 
+                        aria-label="..." 
+                        oninput="document.getElementById('meet_title_submit').disabled=false;"></input>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="submit" id="meet_title_submit" disabled>Update</button>
+                </span>
+            </div>
+        </div>
+    </form>
+    <form action="/settings" method="POST">
+        <div class="input-group">
+            <label for="serial_port">Serial Port</label>
+            <div class="input-group">
+                <select id="serial_port"
+                    name="serial_port"
+                    class="form-control"
+                    oninput="document.getElementById('serial_port_submit').disabled=false;">
+                {% for port, desc in serial_port_list %}
+                    {% if port == serial_port %}
+                        <option value="{{port}}" selected>{{desc}}</option>
+                    {% else %}
+                        <option value="{{port}}">{{desc}}</option>
+                    {% endif %}
+                {% endfor %}
+                </select>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="submit" id="serial_port_submit" disabled>Update</button>
+                </span>
+            </div>
+        </div>
+    </form>
+    <form action="/settings" method="POST">
+        <div class="input-group">
+            <label for="user_name">User Name</label>
+            <div class="input-group">
+                <input name="user_name" 
+                    id="user_name"
+                    value="{{ user_name }}"  
+                    class="form-control" 
+                    oninput="document.getElementById('user_name_submit').disabled=false;"></input>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="submit" id="user_name_submit" disabled>Update</button>
+                </span>
+            </div>
+        </div>
+    </form>
+    <form action="/settings" method="POST">
+        <div class="input-group">
+            <label for="password1">Change Password</label>
+            <input name="password1" 
+                id="password1"
+                type="password" 
+                placeholder="New Password"
+                class="form-control" 
+                oninput="password_check(this.form);"></input>
+            <div class="input-group" id="password_verify" style="visibility:hidden">
+                <input name="password2" 
+                    type="password"
+                    placeholder="Verify Password"
+                    class="form-control" 
+                    oninput="password_check(this.form);"></input>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="submit" id="password_submit" disabled>Update</button>
+                </span>
+            </div>
+        </div>
+    </form>
+    <form action="/logout">
+        <input type="submit" value="Log Out" class="btn btn-default"/>
+    </form>
 </div>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 </body>
 </html>

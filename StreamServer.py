@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! python3
 from flask import Flask, render_template, Response, request, abort, redirect, url_for
 import flask_login
 from flask_socketio import SocketIO, send, emit
@@ -51,8 +51,10 @@ channel_running = [False for i in range(10)]
 
 def load_settings():
     global settings
-    with open(settings_file, "rt") as f:
-        settings.update(json.load(f))
+    try:
+        with open(settings_file, "rt") as f:
+            settings.update(json.load(f))
+    except: pass
 
 ## Windows stuff to move the cursor
 STD_OUTPUT_HANDLE = -11
