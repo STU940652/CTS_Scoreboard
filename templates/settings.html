@@ -27,6 +27,11 @@
   <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]-->
 </head>
+<style>
+.input-group {
+    width: 100%;
+}
+</style>
 
 <script>
 function password_check(form) {
@@ -45,16 +50,16 @@ function password_check(form) {
 }
 </script>
 
-<body style="margin:0px" onload="">
+<body>
 
 <div class="container">
-    <div class="header clearfix">
+    <div class="jumbotron">
         <h1>CTS Scoreboard</h1>
         <h2>Settings</h2>
     </div>
 
 
-    <form action="/settings" method="POST">
+    <div class="row"><div class="col-lg-8"><form action="/settings" method="POST">
         <div class="input-group">
             <label for="meet_title">Title</label>
             <div class="input-group">
@@ -69,8 +74,8 @@ function password_check(form) {
                 </span>
             </div>
         </div>
-    </form>
-    <form action="/settings" method="POST">
+    </form></div></div>
+    <div class="row"><div class="col-lg-6"><form action="/settings" method="POST">
         <div class="input-group">
             <label for="serial_port">Serial Port</label>
             <div class="input-group">
@@ -91,8 +96,8 @@ function password_check(form) {
                 </span>
             </div>
         </div>
-    </form>
-    <form action="/settings" method="POST">
+    </form></div></div>
+    <div class="row"><div class="col-md-4"><form action="/settings" method="POST">
         <div class="input-group">
             <label for="user_name">User Name</label>
             <div class="input-group">
@@ -106,8 +111,8 @@ function password_check(form) {
                 </span>
             </div>
         </div>
-    </form>
-    <form action="/settings" method="POST">
+    </form></div></div>
+    <div class="row"><div class="col-md-4"><form action="/settings" method="POST">
         <div class="input-group">
             <label for="password1">Change Password</label>
             <input name="password1" 
@@ -127,10 +132,10 @@ function password_check(form) {
                 </span>
             </div>
         </div>
-    </form>
-    <form action="/logout">
+    </form></div></div>
+    <div class="row"><div class="col-md-4"><form action="/logout">
         <input type="submit" value="Log Out" class="btn btn-default"/>
-    </form>
+    </form></div></div>
 </div>
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
