@@ -301,8 +301,10 @@ def route_site_map():
             title = rule.endpoint.replace("_"," ")
             if title.startswith('route '):
                 title = title[6:]
-            links.append((url, title.title()))
+            if title not in ['login','logout','site map']:
+                links.append((url, title.title()))
     # links is now a list of url, endpoint tuple
+    links.sort(key=lambda a: '_' if (a[1] == 'Site List') else a[1])
     return render_template('site_map.html', links=links)
     
 # callback to reload the user object        
