@@ -81,8 +81,11 @@ def hex_to_digit(c):
 update={}
 next_update = datetime.datetime.now()
 
-def parse_line(l):
+def parse_line(l, out = None):
     global event_heat_info, lane_info, time_info, running_time, update, next_update
+    
+    if out:
+        out.write("[%f] "% time.time() + " ".join(["%02X" % int(c) for c in l]) + "\n")
 
     try:
         # Byte 0 - Channel
@@ -102,19 +105,19 @@ def parse_line(l):
             place = hex_to_digit(lane_info[channel][1])
             
             if running_finish:
-                time = running_time # '        '
+                lane_time = running_time # '        '
             else:
-                time = hex_to_digit(lane_info[channel][2]) + hex_to_digit(lane_info[channel][3])
-                time += ':' if time.strip() else ' '
-                time += hex_to_digit(lane_info[channel][4]) + hex_to_digit(lane_info[channel][5])
-                time += '.' if time.strip() else ' '
-                time += hex_to_digit(lane_info[channel][6]) + hex_to_digit(lane_info[channel][7])
+                lane_time = hex_to_digit(lane_info[channel][2]) + hex_to_digit(lane_info[channel][3])
+                lane_time += ':' if lane_time.strip() else ' '
+                lane_time += hex_to_digit(lane_info[channel][4]) + hex_to_digit(lane_info[channel][5])
+                lane_time += '.' if lane_time.strip() else ' '
+                lane_time += hex_to_digit(lane_info[channel][6]) + hex_to_digit(lane_info[channel][7])
 
-            update["lane_time%i"%channel] = time
+            update["lane_time%i"%channel] = lane_time
             update["lane_place%i"%channel] = place
             
             print_at(channel+1, 0, " " * 20)
-            print_at(channel+1, 0, "%4s: %s %s %s" % (channel, lane, place, time))
+            print_at(channel+1, 0, "%4s: %s %s %s" % (channel, lane, place, lane_time))
 
         if (channel == 0) and not format_display:
             # Running time
@@ -151,21 +154,28 @@ def parse_line(l):
 
 
 def main_thread_worker():
+    j = None
     if in_file:
         delay = 0.0
+        start_time = None
         with open(in_file, 'rt') as f:
             if out_file:
                 j = open(out_file, "at")
             l = []
-            for d in re.finditer("([0-9a-fA-F]{2}) *", f.read()):
-                c = int(d.group(1), 16)
+            for d in re.finditer(r"\[([0-9.]+)\]\s*|([0-9a-fA-F]{2}) +", f.read()):
+                if d.group(1):
+                    if start_time:
+                        delay = float(d.group(1)) - time.time() - start_time
+                        if delay > 0:
+                            socketio.sleep(delay)
+                    else:
+                        start_time = float(d.group(1)) - time.time()
+                    continue
+                c = int(d.group(2), 16)
                 if c:
-                    if out_file:
-                        j.write ("%02X " % int(c))
-
                     if (c & 0x80) or (len(l) > 8):
                         if len(l):
-                            parse_line(l)
+                            parse_line(l, j)
                         l=[]
                     l.append(c)
                 if delay > (0.1):
@@ -182,12 +192,9 @@ def main_thread_worker():
                 c = f.read(1)
                 if c:
                     c=c[0]
-                    if out_file:
-                        j.write ("%02X " % int(c))
-
                     if (c & 0x80) or (len(l) > 8):
                         if len(l):
-                            parse_line(l)
+                            parse_line(l, j)
                         l=[]
                     l.append(c)
                 else:
