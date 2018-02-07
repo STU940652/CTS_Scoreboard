@@ -63,13 +63,40 @@ class COORD(Structure):
     pass
  
 COORD._fields_ = [("X", c_short), ("Y", c_short)]
+
+class SMALL_RECT(Structure):
+    pass
  
+SMALL_RECT._fields_ = [("Left", c_short), ("Top", c_short), ("Right", c_short), ("Bottom", c_short)]
+ 
+class CONSOLE_SCREEN_BUFFER_INFO(Structure):
+    pass
+ 
+CONSOLE_SCREEN_BUFFER_INFO._fields_ = [
+    ("dwSize", COORD),
+    ("dwCursorPosition", COORD),
+    ("wAttributes", c_ushort),
+    ("srWindow", SMALL_RECT),
+    ("dwMaximumWindowSize", COORD)
+] 
 def print_at(r, c, s):
     h = windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
     windll.kernel32.SetConsoleCursorPosition(h, COORD(c, r))
  
     c = s.encode("windows-1252")
-    windll.kernel32.WriteConsoleA(h, c_char_p(c), len(c), None, None)        
+    windll.kernel32.WriteConsoleA(h, c_char_p(c), len(c), None, None) 
+
+def clear_console():
+    h = windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
+ 
+    csbi = CONSOLE_SCREEN_BUFFER_INFO()
+    windll.kernel32.GetConsoleScreenBufferInfo(h, pointer(csbi))
+    dwConSize = csbi.dwSize.X * csbi.dwSize.Y
+ 
+    scr = COORD(0, 0)
+    windll.kernel32.FillConsoleOutputCharacterA(h, c_char(b" "), dwConSize, scr, pointer(c_ulong()))
+    windll.kernel32.FillConsoleOutputAttribute(h, csbi.wAttributes, dwConSize, scr, pointer(c_ulong()))
+    windll.kernel32.SetConsoleCursorPosition(h, scr)    
             
 def hex_to_digit(c):
     c = c & 0x0F
@@ -345,9 +372,10 @@ if __name__ == '__main__':
             settings['serial_port'] = args.port
         in_file = args.in_file
         out_file = args.out
+        clear_console()
         socketio.run(app, host="0.0.0.0")
     except:
         traceback.print_exc()
     finally:
-        input()
+        input('Press enter to continue...')
         
