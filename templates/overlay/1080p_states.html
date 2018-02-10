@@ -1,0 +1,210 @@
+<html>
+<link href="https://fonts.googleapis.com/css?family=Overpass+Mono" rel="stylesheet">
+<!--
+// HEX: #cfe0e8
+// HEX: #b7d7e8
+// HEX: #87bdd8
+// HEX: #daebe8
+-->
+<style>
+.content_outer{
+    width: 1920;
+    height: 1080;
+    position: relative;
+    z-index: 100;
+}
+
+.content_title_block{
+    width: 750px;
+    # position: relative;
+    position: absolute;
+    left: 25;
+    bottom: 25;
+}
+
+.content_meet_title{
+    font-family: 'Overpass Mono', monospace;
+    font-size: 30px;
+    color: #000000;
+    background-color: #87bdd8;
+    padding-top: 5px;
+    padding-left: 30px;
+}
+
+.content_meet_date{
+    font-family: 'Overpass Mono', monospace;
+    font-size: 26px;
+    color: #000000;
+    background-color: #daebe8;
+    padding-left: 30px;
+}
+
+.content_event_number{
+    font-family: 'Overpass Mono', monospace;
+    font-size: 32px;
+    color: #000000;
+    background-color: #9d238f;
+    width: 370px;
+    float: left;
+    padding-left: 30px;
+}
+
+.content_heat_number{
+    font-family: 'Overpass Mono', monospace;
+    font-size: 32px;
+    color: #000000;
+    background-color: #9d238f;
+    width: 400px;
+    float: left;
+}
+
+.content_scoreboard{
+    font-family: 'Overpass Mono', monospace;
+    font-size: 32px;
+    width: 300px;
+    color: #000000;
+    position: absolute;
+    bottom: 25;
+    right: 25;
+}
+
+.scoreboard_title{
+    font-family: 'Overpass Mono', monospace;
+    color: #000000;
+    font-size: 26px;
+    background-color: #87bdd8;
+    width: 100%;
+    text-align: center;
+}
+
+.scoreboard_header{
+    font-family: 'Overpass Mono', monospace;
+    color: #000000;
+    font-size: 24px;
+    background-color: #daebe8;
+}
+
+.scoreboard_row_odd{
+    font-family: 'Overpass Mono', monospace;
+    color: #000000;
+    font-size: 24px;
+    background-color: #b7d7e8;
+}
+
+.scoreboard_row_eve{
+    font-family: 'Overpass Mono', monospace;
+    color: #000000;
+    font-size: 24px;
+    background-color: #cfe0e8;
+}
+
+.background{
+    background-color: #999999;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1920;
+    height: 1080;
+    z-index: -100;
+}
+</style>
+
+
+<script>
+var scoreboard_updated = true;
+
+function on_timer(){
+    var months = {0: "January", 1: "February", 2: "March", 3: "April", 4: "May", 5: "June", 6: "July", 7: "August", 8: "September", 9: "October", 10: "November", 11: "December"};
+
+    // Update current time
+    var d = new Date();
+    var hoursAmPm = (d.getHours() % 12);
+    hoursAmPm = (hoursAmPm != 0) ? hoursAmPm : 12;
+    document.getElementById("meet_datetime").innerHTML = months[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear() + " " + hoursAmPm + ":" + ("0" + d.getMinutes()).slice(-2);
+    
+    //if (!scoreboard_updated) document.getElementById("scoreboard").style.display = "none";
+    scoreboard_updated = false;
+}
+
+function init() {
+    on_timer();
+    // Start timer every second
+    window.setInterval(on_timer, 30000);
+}
+
+</script>
+
+<body style="margin:0px" onload="init();">
+<div class="content_outer"> 
+   <div class="content_scoreboard" id="scoreboard" style="display:none;">
+        <div class="scoreboard_title">Event: <span id="current_event"></span>    Heat: <span id="current_heat"></span></div>
+        <table width="100%" style="border-spacing:0;">
+            <tr class="scoreboard_header"> <td align="center">Lane</td><td align="center">Place</td><td align="center">Time</td></tr>
+            <tr class="scoreboard_row_odd"><td align="center">1</td><td id="lane_place1" align="center"></td><td align="right"><span id="lane_time1"></span>&nbsp;</td></tr>
+            <tr class="scoreboard_row_eve"><td align="center">2</td><td id="lane_place2" align="center"></td><td align="right"><span id="lane_time2"></span>&nbsp;</td></tr>
+            <tr class="scoreboard_row_odd"><td align="center">3</td><td id="lane_place3" align="center"></td><td align="right"><span id="lane_time3"></span>&nbsp;</td></tr>
+            <tr class="scoreboard_row_eve"><td align="center">4</td><td id="lane_place4" align="center"></td><td align="right"><span id="lane_time4"></span>&nbsp;</td></tr>
+            <tr class="scoreboard_row_odd"><td align="center">5</td><td id="lane_place5" align="center"></td><td align="right"><span id="lane_time5"></span>&nbsp;</td></tr>
+            <tr class="scoreboard_row_eve"><td align="center">6</td><td id="lane_place6" align="center"></td><td align="right"><span id="lane_time6"></span>&nbsp;</td></tr>
+            <tr class="scoreboard_row_odd"><td align="center">7</td><td id="lane_place7" align="center"></td><td align="right"><span id="lane_time7"></span>&nbsp;</td></tr>
+            <tr class="scoreboard_row_eve"><td align="center">8</td><td id="lane_place8" align="center"></td><td align="right"><span id="lane_time8"></span>&nbsp;</td></tr>
+        </table>
+    </div>
+    <div class="content_title_block">
+        <div class="content_meet_title">{{ meet_title }}</div>
+        <div class="content_meet_date"><span id="meet_datetime"></span></div>
+    </div>
+</div>
+<div class="background">
+{% if test_background %}
+<img src="{{url_for('static', filename='States.jpg')}}" width="100%"/>
+{% endif %}
+</div>
+
+</body>
+
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+    var socket = io.connect('http://' + document.domain + ':' + location.port + '/scoreboard');
+    socket.on('connect', function() {
+        socket.emit('start_scoreboard', {data: 'I\'m connected!'});
+    });
+    
+    socket.on('update_scoreboard', (s) => {
+        scoreboard_updated = true;
+        var valid_fields = [
+            "content_meet_title",
+            "current_event",
+            "current_heat",
+            "lane_place1",
+            "lane_place2",
+            "lane_place3",
+            "lane_place4",
+            "lane_place5",
+            "lane_place6",
+            "lane_place7",
+            "lane_place8",
+            "lane_time1",
+            "lane_time2",
+            "lane_time3",
+            "lane_time4",
+            "lane_time5",
+            "lane_time6",
+            "lane_time7",
+            "lane_time8"
+        ];
+        
+        var message_keys = Object.keys(s);
+        
+        message_keys.forEach( (k) => {
+            if (valid_fields.indexOf(k) > 0) {
+                document.getElementById(k).innerHTML = s[k];
+            }
+        })
+        document.getElementById("scoreboard").style.display = "block";
+
+    });
+    
+</script>
+
+</html>

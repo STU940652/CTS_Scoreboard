@@ -10,6 +10,8 @@ import serial.tools.list_ports
 import re
 import time
 import json
+import os.path
+import glob
 
 DEBUG = False
 #DEBUG = True
@@ -189,7 +191,7 @@ def main_thread_worker():
             if out_file:
                 j = open(out_file, "at")
             l = []
-            for d in re.finditer(r"\[([0-9.]+)\]\s*|([0-9a-fA-F]{2}) +", f.read()):
+            for d in re.finditer(r"\[([0-9.]+)\]\s*|([0-9a-fA-F]{2})\s+", f.read()):
                 if d.group(1):
                     if start_time:
                         delay = float(d.group(1)) - time.time() - start_time
@@ -250,20 +252,16 @@ user = User(0)
             
             
 @socketio.on('connect', namespace='/scoreboard')
-def test_connect():
+def ws_scoreboard():
     global main_thread
-    print("Scoreboard connected")
     if(main_thread is None):
         main_thread = socketio.start_background_task(target=main_thread_worker)
 
 # Scoreboard Templates
-@app.route('/overlay_1080p')
-def route_overlay_1080p():
-    return render_template('scoreboard.html', meet_title=settings['meet_title'])
-
-@app.route('/test')
-def route_overlay_test():
-    return render_template('scoreboard.html', meet_title=settings['meet_title'], test_background=True)    
+@app.route('/overlay/<name>')
+def route_overlay(name):
+    overlay_name = "overlay/" + name + '.html'
+    return render_template(overlay_name, meet_title=settings['meet_title'], test_background='test' in request.args.keys())
     
 @app.route('/settings', methods=['POST', 'GET'])
 @flask_login.login_required
@@ -337,6 +335,9 @@ def route_site_map():
                 title = title[6:]
             if title not in ['login','logout','site map']:
                 links.append((url, title.title()))
+                
+    for file in glob.glob(os.path.join("templates", "overlay", "*.html")):
+        links.append( (file[file.startswith("templates") and len("templates"):].rsplit('.',1)[0], "Overlay " + os.path.basename(file).rsplit('.',1)[0]) )
     # links is now a list of url, endpoint tuple
     links.sort(key=lambda a: '_' if (a[1] == 'Site List') else a[1])
     return render_template('site_map.html', links=links)
