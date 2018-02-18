@@ -61,12 +61,29 @@
 .content_scoreboard{
     font-family: 'Overpass Mono', monospace;
     font-size: 32px;
-    width: 600px;
+    // width: 600px;
     // width: 300px;
     color: #000000;
     position: absolute;
     bottom: 25;
     right: 25;
+}
+
+.scoreboard_table{
+    border-spacing:0;
+    table-layout:fixed;
+}
+
+table.scoreboard_table td{
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 0px;
+    width: 0px;
+}
+
+table.scoreboard_table th{
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .scoreboard_title{
@@ -107,6 +124,7 @@
     background-color: #cfe0e8;
 }
 
+
 .background{
     background-color: #999999;
     position: absolute;
@@ -145,11 +163,17 @@ function init() {
 
 <body style="margin:0px" onload="init();">
 <div class="content_outer"> 
-   <div class="content_scoreboard" id="scoreboard" style="display:none;">
-        <div class="scoreboard_title">Event: <span id="current_event"></span>    Heat: <span id="current_heat"></span></div>
-        <div id="event_name" class="scoreboard_event_name"></div>
-        <table width="100%" style="border-spacing:0;">
-            <tr class="scoreboard_header"> <td align="center">Lane</td><td align="center">Place</td><td align="center">Time</td><td align="center">Name</td></tr>
+   <div class="content_scoreboard" id="scoreboard" style="display:none;">      
+        <table class="scoreboard_table">
+        <thead>
+            <tr><th colspan="4" class="scoreboard_title">Event: <span id="current_event"></span>    Heat: <span id="current_heat"></span></th></tr>
+            <tr id="scoreboard_event_name"><th colspan="4"  class="scoreboard_event_name"><span id="event_name"></span></th></tr>
+            <tr class="scoreboard_header"> 
+                <th align="center" style="width:  80px;max-width:  80px;">Lane</th>
+                <th align="center" style="width:  80px;max-width:  80px;">Place</th>
+                <th align="center" style="width: 150px;max-width: 150px;">Time</th>
+                <th align="center" style="width: 400px;max-width: 400px;">Name</th></tr>
+        </thead>
             <tr class="scoreboard_row_odd"><td align="center">1</td><td id="lane_place1" align="center"></td><td align="right"><span id="lane_time1"></span>&nbsp;</td><td id="lane_name1" class="lane_name">&nbsp;</td></tr>
             <tr class="scoreboard_row_eve"><td align="center">2</td><td id="lane_place2" align="center"></td><td align="right"><span id="lane_time2"></span>&nbsp;</td><td id="lane_name2" class="lane_name">&nbsp;</td></tr>
             <tr class="scoreboard_row_odd"><td align="center">3</td><td id="lane_place3" align="center"></td><td align="right"><span id="lane_time3"></span>&nbsp;</td><td id="lane_name3" class="lane_name">&nbsp;</td></tr>
