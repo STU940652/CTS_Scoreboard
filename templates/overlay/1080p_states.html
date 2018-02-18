@@ -31,6 +31,14 @@
     padding-left: 30px;
 }
 
+.content_event_name{
+    font-family: 'Overpass Mono', monospace;
+    color: #cfe0e8;
+    font-size: 24px;
+    background-color: #505050;
+    padding-left: 30px;
+}
+
 .content_meet_date{
     font-family: 'Overpass Mono', monospace;
     font-size: 26px;
@@ -61,8 +69,6 @@
 .content_scoreboard{
     font-family: 'Overpass Mono', monospace;
     font-size: 32px;
-    // width: 600px;
-    // width: 300px;
     color: #000000;
     position: absolute;
     bottom: 25;
@@ -89,20 +95,12 @@ table.scoreboard_table th{
 .scoreboard_title{
     font-family: 'Overpass Mono', monospace;
     color: #000000;
-    font-size: 26px;
+    font-size: 24px;
     background-color: #87bdd8;
     width: 100%;
     text-align: center;
 }
 
-.scoreboard_event_name{
-    font-family: 'Overpass Mono', monospace;
-    color: #cfe0e8;
-    font-size: 24px;
-    background-color: #505050;
-    width: 100%;
-    text-align: center;
-}
 .scoreboard_header{
     font-family: 'Overpass Mono', monospace;
     color: #000000;
@@ -124,6 +122,53 @@ table.scoreboard_table th{
     background-color: #cfe0e8;
 }
 
+.anim{
+    animation-duration: 0.5s;
+    animation-fill-mode: forwards;
+}
+
+.scoreboard_name_col{
+    width: 400px;
+    max-width: 400px;
+}
+
+@keyframes scoreboard_to_hidden{
+    to {
+        width:      0px;
+        max-width:  0px;
+    }
+}
+
+@keyframes scoreboard_name_to_visible{
+    to {
+        width:      400px;
+        max-width:  400px;
+    }
+}
+
+.scoreboard_place_col{
+    width: 80px;
+    max-width: 80px;
+}
+
+@keyframes scoreboard_place_to_visible{
+    to {
+        width:      80px;
+        max-width:  80px;
+    }
+}
+
+.scoreboard_time_col{
+    width: 150px;
+    max-width: 150px;
+}
+
+@keyframes scoreboard_time_to_visible{
+    to {
+        width:      150px;
+        max-width:  150px;
+    }
+}
 
 .background{
     background-color: #999999;
@@ -159,6 +204,68 @@ function init() {
     window.setInterval(on_timer, 30000);
 }
 
+
+function mode_to_intro(){
+    // Need to hide event place and time column, show name
+    //document.getElementById("event_name").style.display = "block";
+    document.getElementById("scoreboard_place_col").style.animationName = "scoreboard_to_hidden";
+    document.getElementById("scoreboard_time_col").style.animationName = "scoreboard_to_hidden";
+    document.getElementById("scoreboard_name_col").style.animationName = "scoreboard_name_to_visible";
+    
+    setTimeout ( function() {
+        document.getElementById("scoreboard_place_col").style.width = '0px';
+        document.getElementById("scoreboard_place_col").style.maxWidth = '0px';
+        document.getElementById("scoreboard_place_col").style.animationName = "";
+        document.getElementById("scoreboard_time_col").style.width = '0px';
+        document.getElementById("scoreboard_time_col").style.maxWidth = '0px';
+        document.getElementById("scoreboard_time_col").style.animationName = "";
+        document.getElementById("scoreboard_name_col").style.width = '400px';
+        document.getElementById("scoreboard_name_col").style.maxWidth = '400px';
+        document.getElementById("scoreboard_name_col").style.animationName = "";
+    }, 2000);    
+}
+
+function mode_to_running(){
+    // Need to hide event title and name column
+        //document.getElementById("event_name").style.display = "none";
+    document.getElementById("scoreboard_place_col").style.animationName = "scoreboard_place_to_visible";
+    document.getElementById("scoreboard_time_col").style.animationName = "scoreboard_time_to_visible";
+        document.getElementById("scoreboard_name_col").style.animationName = "scoreboard_to_hidden";
+    
+    setTimeout ( function() {
+        document.getElementById("scoreboard_place_col").style.width = '80px';
+        document.getElementById("scoreboard_place_col").style.maxWidth = '80px';
+        document.getElementById("scoreboard_place_col").style.animationName = "";
+        document.getElementById("scoreboard_time_col").style.width = '150px';
+        document.getElementById("scoreboard_time_col").style.maxWidth = '150px';
+        document.getElementById("scoreboard_time_col").style.animationName = "";
+        document.getElementById("scoreboard_name_col").style.width = '0px';
+        document.getElementById("scoreboard_name_col").style.maxWidth = '0px';
+        document.getElementById("scoreboard_name_col").style.animationName = "";
+    }, 2000);
+}
+    
+function mode_to_results(){
+    // Need to hide event title and name column
+    //document.getElementById("event_name").style.display = "block";
+    document.getElementById("scoreboard_place_col").style.animationName = "scoreboard_place_to_visible";
+    document.getElementById("scoreboard_time_col").style.animationName = "scoreboard_time_to_visible";
+    document.getElementById("scoreboard_name_col").style.animationName = "scoreboard_name_to_visible";
+    
+    setTimeout ( function() {
+        document.getElementById("scoreboard_place_col").style.width = '80px';
+        document.getElementById("scoreboard_place_col").style.maxWidth = '80px';
+        document.getElementById("scoreboard_place_col").style.animationName = "";
+        document.getElementById("scoreboard_time_col").style.width = '150px';
+        document.getElementById("scoreboard_time_col").style.maxWidth = '150px';
+        document.getElementById("scoreboard_time_col").style.animationName = "";
+        document.getElementById("scoreboard_name_col").style.width = '400px';
+        document.getElementById("scoreboard_name_col").style.maxWidth = '400px';
+        document.getElementById("scoreboard_name_col").style.animationName = "";
+    }, 2000);    
+}
+
+
 </script>
 
 <body style="margin:0px" onload="init();">
@@ -167,12 +274,12 @@ function init() {
         <table class="scoreboard_table">
         <thead>
             <tr><th colspan="4" class="scoreboard_title">Event: <span id="current_event"></span>    Heat: <span id="current_heat"></span></th></tr>
-            <tr id="scoreboard_event_name"><th colspan="4"  class="scoreboard_event_name"><span id="event_name"></span></th></tr>
+            
             <tr class="scoreboard_header"> 
-                <th align="center" style="width:  80px;max-width:  80px;">Lane</th>
-                <th align="center" style="width:  80px;max-width:  80px;">Place</th>
-                <th align="center" style="width: 150px;max-width: 150px;">Time</th>
-                <th align="center" style="width: 400px;max-width: 400px;">Name</th></tr>
+                <th align="center" id="scoreboard_lane_col" style="width:  80px;max-width:  80px;">Lane</th>
+                <th align="center" id="scoreboard_place_col" class="scoreboard_place_col anim">Place</th>
+                <th align="center" id="scoreboard_time_col" class="scoreboard_time_col anim">Time</th>
+                <th align="center" id="scoreboard_name_col" class="scoreboard_name_col anim">Name</th></tr>
         </thead>
             <tr class="scoreboard_row_odd"><td align="center">1</td><td id="lane_place1" align="center"></td><td align="right"><span id="lane_time1"></span>&nbsp;</td><td id="lane_name1" class="lane_name">&nbsp;</td></tr>
             <tr class="scoreboard_row_eve"><td align="center">2</td><td id="lane_place2" align="center"></td><td align="right"><span id="lane_time2"></span>&nbsp;</td><td id="lane_name2" class="lane_name">&nbsp;</td></tr>
@@ -186,6 +293,7 @@ function init() {
     </div>
     <div class="content_title_block">
         <div class="content_meet_title">{{ meet_title }}</div>
+        <div class="content_event_name"><span id="event_name" class="anim"></span></div>
         <div class="content_meet_date"><span id="meet_datetime"></span></div>
     </div>
 </div>

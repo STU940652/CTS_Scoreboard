@@ -183,7 +183,6 @@ def parse_line(l, out = None):
                 
                 for i in range(1,11):
                     update["lane_name%i" % i] = event_info.get_display_string(event_tuple[0], event_tuple[1], i)
-                    print("lane_name%i" % i, event_info.get_display_string(event_tuple[0], event_tuple[1], i))
 
     except IndexError:
         traceback.print_exc()
