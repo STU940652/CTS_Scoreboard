@@ -12,6 +12,7 @@ import time
 import json
 import os.path
 import glob
+from hytek_event_loader import HytekEventLoader
 
 DEBUG = False
 #DEBUG = True
@@ -25,6 +26,9 @@ settings = {
     }
 in_file = None
 out_file = None
+
+# Event Settings
+event_info = HytekEventLoader("mm4heatsheet3col.csv")
 
 app = Flask(__name__)
 # config
@@ -109,9 +113,10 @@ def hex_to_digit(c):
 
 update={}
 next_update = datetime.datetime.now()
+last_event_sent = (0,0)
 
 def parse_line(l, out = None):
-    global event_heat_info, lane_info, time_info, running_time, update, next_update
+    global event_heat_info, lane_info, time_info, running_time, update, next_update, last_event_sent
     
     if out:
         out.write("[%f] "% time.time() + " ".join(["%02X" % int(c) for c in l]) + "\n")
@@ -168,8 +173,17 @@ def parse_line(l, out = None):
                 
             update["current_event"] = ''.join(event_heat_info[:3])
             update["current_heat"] = ''.join(event_heat_info[-3:])
+            event_tuple = (int(update["current_event"]), int(update["current_heat"]))
 
             print_at(0, 0, " Event:" +  update["current_event"] + " Heat:" + update["current_heat"] + "    ")
+            
+            if last_event_sent != event_tuple:
+                last_event_sent = event_tuple
+                update["event_name"] = event_info.get_event_name(event_tuple[0])
+                
+                for i in range(1,11):
+                    update["lane_name%i" % i] = event_info.get_display_string(event_tuple[0], event_tuple[1], i)
+                    print("lane_name%i" % i, event_info.get_display_string(event_tuple[0], event_tuple[1], i))
 
     except IndexError:
         traceback.print_exc()

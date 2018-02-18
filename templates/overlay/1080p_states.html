@@ -61,7 +61,8 @@
 .content_scoreboard{
     font-family: 'Overpass Mono', monospace;
     font-size: 32px;
-    width: 300px;
+    width: 600px;
+    // width: 300px;
     color: #000000;
     position: absolute;
     bottom: 25;
@@ -77,6 +78,14 @@
     text-align: center;
 }
 
+.scoreboard_event_name{
+    font-family: 'Overpass Mono', monospace;
+    color: #cfe0e8;
+    font-size: 24px;
+    background-color: #505050;
+    width: 100%;
+    text-align: center;
+}
 .scoreboard_header{
     font-family: 'Overpass Mono', monospace;
     color: #000000;
@@ -138,16 +147,17 @@ function init() {
 <div class="content_outer"> 
    <div class="content_scoreboard" id="scoreboard" style="display:none;">
         <div class="scoreboard_title">Event: <span id="current_event"></span>    Heat: <span id="current_heat"></span></div>
+        <div id="event_name" class="scoreboard_event_name"></div>
         <table width="100%" style="border-spacing:0;">
-            <tr class="scoreboard_header"> <td align="center">Lane</td><td align="center">Place</td><td align="center">Time</td></tr>
-            <tr class="scoreboard_row_odd"><td align="center">1</td><td id="lane_place1" align="center"></td><td align="right"><span id="lane_time1"></span>&nbsp;</td></tr>
-            <tr class="scoreboard_row_eve"><td align="center">2</td><td id="lane_place2" align="center"></td><td align="right"><span id="lane_time2"></span>&nbsp;</td></tr>
-            <tr class="scoreboard_row_odd"><td align="center">3</td><td id="lane_place3" align="center"></td><td align="right"><span id="lane_time3"></span>&nbsp;</td></tr>
-            <tr class="scoreboard_row_eve"><td align="center">4</td><td id="lane_place4" align="center"></td><td align="right"><span id="lane_time4"></span>&nbsp;</td></tr>
-            <tr class="scoreboard_row_odd"><td align="center">5</td><td id="lane_place5" align="center"></td><td align="right"><span id="lane_time5"></span>&nbsp;</td></tr>
-            <tr class="scoreboard_row_eve"><td align="center">6</td><td id="lane_place6" align="center"></td><td align="right"><span id="lane_time6"></span>&nbsp;</td></tr>
-            <tr class="scoreboard_row_odd"><td align="center">7</td><td id="lane_place7" align="center"></td><td align="right"><span id="lane_time7"></span>&nbsp;</td></tr>
-            <tr class="scoreboard_row_eve"><td align="center">8</td><td id="lane_place8" align="center"></td><td align="right"><span id="lane_time8"></span>&nbsp;</td></tr>
+            <tr class="scoreboard_header"> <td align="center">Lane</td><td align="center">Place</td><td align="center">Time</td><td align="center">Name</td></tr>
+            <tr class="scoreboard_row_odd"><td align="center">1</td><td id="lane_place1" align="center"></td><td align="right"><span id="lane_time1"></span>&nbsp;</td><td id="lane_name1" class="lane_name">&nbsp;</td></tr>
+            <tr class="scoreboard_row_eve"><td align="center">2</td><td id="lane_place2" align="center"></td><td align="right"><span id="lane_time2"></span>&nbsp;</td><td id="lane_name2" class="lane_name">&nbsp;</td></tr>
+            <tr class="scoreboard_row_odd"><td align="center">3</td><td id="lane_place3" align="center"></td><td align="right"><span id="lane_time3"></span>&nbsp;</td><td id="lane_name3" class="lane_name">&nbsp;</td></tr>
+            <tr class="scoreboard_row_eve"><td align="center">4</td><td id="lane_place4" align="center"></td><td align="right"><span id="lane_time4"></span>&nbsp;</td><td id="lane_name4" class="lane_name">&nbsp;</td></tr>
+            <tr class="scoreboard_row_odd"><td align="center">5</td><td id="lane_place5" align="center"></td><td align="right"><span id="lane_time5"></span>&nbsp;</td><td id="lane_name5" class="lane_name">&nbsp;</td></tr>
+            <tr class="scoreboard_row_eve"><td align="center">6</td><td id="lane_place6" align="center"></td><td align="right"><span id="lane_time6"></span>&nbsp;</td><td id="lane_name6" class="lane_name">&nbsp;</td></tr>
+            <tr class="scoreboard_row_odd"><td align="center">7</td><td id="lane_place7" align="center"></td><td align="right"><span id="lane_time7"></span>&nbsp;</td><td id="lane_name7" class="lane_name">&nbsp;</td></tr>
+            <tr class="scoreboard_row_eve"><td align="center">8</td><td id="lane_place8" align="center"></td><td align="right"><span id="lane_time8"></span>&nbsp;</td><td id="lane_name8" class="lane_name">&nbsp;</td></tr>
         </table>
     </div>
     <div class="content_title_block">
@@ -176,6 +186,7 @@ function init() {
             "content_meet_title",
             "current_event",
             "current_heat",
+            "event_name",
             "lane_place1",
             "lane_place2",
             "lane_place3",
@@ -191,7 +202,15 @@ function init() {
             "lane_time5",
             "lane_time6",
             "lane_time7",
-            "lane_time8"
+            "lane_time8",
+            "lane_name1",
+            "lane_name2",
+            "lane_name3",
+            "lane_name4",
+            "lane_name5",
+            "lane_name6",
+            "lane_name7",
+            "lane_name8"
         ];
         
         var message_keys = Object.keys(s);
