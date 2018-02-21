@@ -73,6 +73,7 @@
     position: absolute;
     bottom: 25;
     right: 25;
+    transition: opacity 0.5s;
 }
 
 .scoreboard_table{
@@ -123,8 +124,7 @@ table.scoreboard_table th{
 }
 
 .anim{
-    animation-duration: 0.5s;
-    animation-fill-mode: forwards;
+    transition: width 0.5s, max-width 0.5s;
 }
 
 .scoreboard_name_col{
@@ -132,42 +132,14 @@ table.scoreboard_table th{
     max-width: 400px;
 }
 
-@keyframes scoreboard_to_hidden{
-    to {
-        width:      0px;
-        max-width:  0px;
-    }
-}
-
-@keyframes scoreboard_name_to_visible{
-    to {
-        width:      400px;
-        max-width:  400px;
-    }
-}
-
 .scoreboard_place_col{
     width: 80px;
     max-width: 80px;
 }
 
-@keyframes scoreboard_place_to_visible{
-    to {
-        width:      80px;
-        max-width:  80px;
-    }
-}
-
 .scoreboard_time_col{
     width: 150px;
     max-width: 150px;
-}
-
-@keyframes scoreboard_time_to_visible{
-    to {
-        width:      150px;
-        max-width:  150px;
-    }
 }
 
 .background{
@@ -204,65 +176,56 @@ function init() {
     window.setInterval(on_timer, 30000);
 }
 
+function mode_to_hidden(){
+    document.getElementById("scoreboard").style.opacity = 0;
+}
 
 function mode_to_intro(){
     // Need to hide event place and time column, show name
     //document.getElementById("event_name").style.display = "block";
-    document.getElementById("scoreboard_place_col").style.animationName = "scoreboard_to_hidden";
-    document.getElementById("scoreboard_time_col").style.animationName = "scoreboard_to_hidden";
-    document.getElementById("scoreboard_name_col").style.animationName = "scoreboard_name_to_visible";
-    
-    setTimeout ( function() {
-        document.getElementById("scoreboard_place_col").style.width = '0px';
-        document.getElementById("scoreboard_place_col").style.maxWidth = '0px';
-        document.getElementById("scoreboard_place_col").style.animationName = "";
-        document.getElementById("scoreboard_time_col").style.width = '0px';
-        document.getElementById("scoreboard_time_col").style.maxWidth = '0px';
-        document.getElementById("scoreboard_time_col").style.animationName = "";
-        document.getElementById("scoreboard_name_col").style.width = '400px';
-        document.getElementById("scoreboard_name_col").style.maxWidth = '400px';
-        document.getElementById("scoreboard_name_col").style.animationName = "";
-    }, 2000);    
+    document.getElementById("scoreboard_place_col").style.width = '0px';
+    document.getElementById("scoreboard_place_col").style.maxWidth = '0px';
+    document.getElementById("scoreboard_time_col").style.width = '0px';
+    document.getElementById("scoreboard_time_col").style.maxWidth = '0px';
+    document.getElementById("scoreboard_name_col").style.width = '400px';
+    document.getElementById("scoreboard_name_col").style.maxWidth = '400px';
+    if (document.getElementById("scoreboard").style.opacity != 1) {
+        setTimeout ( function() {
+            document.getElementById("scoreboard").style.opacity = 1;
+        }, 500);
+    }
 }
 
 function mode_to_running(){
     // Need to hide event title and name column
-        //document.getElementById("event_name").style.display = "none";
-    document.getElementById("scoreboard_place_col").style.animationName = "scoreboard_place_to_visible";
-    document.getElementById("scoreboard_time_col").style.animationName = "scoreboard_time_to_visible";
-        document.getElementById("scoreboard_name_col").style.animationName = "scoreboard_to_hidden";
-    
-    setTimeout ( function() {
-        document.getElementById("scoreboard_place_col").style.width = '80px';
-        document.getElementById("scoreboard_place_col").style.maxWidth = '80px';
-        document.getElementById("scoreboard_place_col").style.animationName = "";
-        document.getElementById("scoreboard_time_col").style.width = '150px';
-        document.getElementById("scoreboard_time_col").style.maxWidth = '150px';
-        document.getElementById("scoreboard_time_col").style.animationName = "";
-        document.getElementById("scoreboard_name_col").style.width = '0px';
-        document.getElementById("scoreboard_name_col").style.maxWidth = '0px';
-        document.getElementById("scoreboard_name_col").style.animationName = "";
-    }, 2000);
+    //document.getElementById("event_name").style.display = "none";
+    document.getElementById("scoreboard_place_col").style.width = '80px';
+    document.getElementById("scoreboard_place_col").style.maxWidth = '80px';
+    document.getElementById("scoreboard_time_col").style.width = '150px';
+    document.getElementById("scoreboard_time_col").style.maxWidth = '150px';
+    document.getElementById("scoreboard_name_col").style.width = '0px';
+    document.getElementById("scoreboard_name_col").style.maxWidth = '0px';
+    if (document.getElementById("scoreboard").style.opacity != 1) {
+        setTimeout ( function() {
+            document.getElementById("scoreboard").style.opacity = 1;
+        }, 500);
+    }
 }
     
 function mode_to_results(){
     // Need to hide event title and name column
     //document.getElementById("event_name").style.display = "block";
-    document.getElementById("scoreboard_place_col").style.animationName = "scoreboard_place_to_visible";
-    document.getElementById("scoreboard_time_col").style.animationName = "scoreboard_time_to_visible";
-    document.getElementById("scoreboard_name_col").style.animationName = "scoreboard_name_to_visible";
-    
-    setTimeout ( function() {
-        document.getElementById("scoreboard_place_col").style.width = '80px';
-        document.getElementById("scoreboard_place_col").style.maxWidth = '80px';
-        document.getElementById("scoreboard_place_col").style.animationName = "";
-        document.getElementById("scoreboard_time_col").style.width = '150px';
-        document.getElementById("scoreboard_time_col").style.maxWidth = '150px';
-        document.getElementById("scoreboard_time_col").style.animationName = "";
-        document.getElementById("scoreboard_name_col").style.width = '400px';
-        document.getElementById("scoreboard_name_col").style.maxWidth = '400px';
-        document.getElementById("scoreboard_name_col").style.animationName = "";
-    }, 2000);    
+    document.getElementById("scoreboard_place_col").style.width = '80px';
+    document.getElementById("scoreboard_place_col").style.maxWidth = '80px';
+    document.getElementById("scoreboard_time_col").style.width = '150px';
+    document.getElementById("scoreboard_time_col").style.maxWidth = '150px';
+    document.getElementById("scoreboard_name_col").style.width = '400px';
+    document.getElementById("scoreboard_name_col").style.maxWidth = '400px';
+    if (document.getElementById("scoreboard").style.opacity != 1) {
+        setTimeout ( function() {
+            document.getElementById("scoreboard").style.opacity = 1;
+        }, 500);
+    }
 }
 
 
