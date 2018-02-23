@@ -179,7 +179,9 @@ def parse_line(l, out = None):
                 
             update["current_event"] = ''.join(event_heat_info[:3])
             update["current_heat"] = ''.join(event_heat_info[-3:])
-            event_tuple = (int(update["current_event"]), int(update["current_heat"]))
+            try:
+                event_tuple = (int(update["current_event"]), int(update["current_heat"]))
+            except: return
 
             print_at(0, 0, " Event:" +  update["current_event"] + " Heat:" + update["current_heat"] + "    ")
             

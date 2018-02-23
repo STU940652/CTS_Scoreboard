@@ -158,6 +158,11 @@ table.scoreboard_table th{
 var scoreboard_updated = true;
 
 var lane_running = {};
+var lane_blank = {};
+var last_event = 0;
+var last_heat = 0;
+var last_state = 0; // hidden
+var current_state = 0; // hidden
 
 function on_timer(){
     var months = {0: "January", 1: "February", 2: "March", 3: "April", 4: "May", 5: "June", 6: "July", 7: "August", 8: "September", 9: "October", 10: "November", 11: "December"};
@@ -317,18 +322,78 @@ function mode_to_results(){
             
             // Check and update lane running
             if (k.startsWith("lane_running")) {
-                lane_running[k]=s[k];
+                lane_running[k.replace("lane_running","")]=s[k];
+            }
+            
+            // Check for lane blank
+            if(k.startsWith("lane_time")){
+                lane_blank[k.replace("lane_time","")] = (s[k].trim() == "");
             }
         })
         
+        // Fill in the running time
         if ("running_time" in s) {
             for (var i=1; i <= 10; i++) {
-                if (lane_running["lane_running"+i] || false){
+                if (lane_running[i] || false){
                     document.getElementById("lane_time"+i).innerHTML = s["running_time"];
                 }
             }
         }
+
+        // Check for new heat or event
+        if ("current_event" in s){
+            if (s["current_event"] != last_event){
+                last_event = s["current_event"];
+                current_state = 1; // Intro
+            }
+        }
+        if ("current_heat" in s){
+            if (s["current_heat"] != last_heat){
+                last_heat = s["current_heat"];
+                current_state = 1; // Intro
+            }
+        }
         
+        // Check for all lanes done
+        // ToDo: (running == true) || ((place == "") && (time != ""))
+        if (current_state != 1) {
+            var all_done = true;
+            for (var i=1;i<=10;i++){
+                if ((i in lane_running) && (lane_running[i] == true)) {
+                    all_done = false;
+                    break;
+                }
+            }
+            if (all_done) current_state = 3; // Results
+        }
+        
+        
+        // Check for any lanes running
+        for (var i=1; i<=10; i++) {
+            if (lane_running[i]||false) {
+                current_state = 2; // Running
+                break;
+            }
+        }
+        
+        if (current_state != last_state) {
+            switch (current_state){
+                case 0: // Hidden
+                    mode_to_hidden();
+                    break;
+                case 1: // Intro 
+                    mode_to_intro();
+                    break;
+                case 2: // Running
+                    mode_to_running();
+                    break;
+                case 3: // Results
+                    mode_to_results();
+                    break;
+            }
+            last_state = current_state;
+        }
+                
         document.getElementById("scoreboard").style.display = "block";
 
     });
