@@ -118,9 +118,10 @@ last_event_sent = (0,0)
 def parse_line(l, out = None):
     global event_heat_info, lane_info, time_info, running_time, update, next_update, last_event_sent
     
+    s = ""
     if out:
-        out.write("[%f] "% time.time() + " ".join(["%02X" % int(c) for c in l]) + "\n")
-
+        k = "[%f] "% time.time() + " ".join(["%02X" % int(c) for c in l])
+        out.write(k)
     try:
         # Byte 0 - Channel
         c = l.pop(0)
@@ -138,21 +139,24 @@ def parse_line(l, out = None):
             lane = hex_to_digit(lane_info[channel][0])
             place = hex_to_digit(lane_info[channel][1])
             
+            update["lane_place%i"%channel] = place
+            update["lane_running%i"%channel] = running_finish
+            
             if running_finish:
                 lane_time = running_time # '        '
+                s = "%4s: running" % (channel)
             else:
                 lane_time = hex_to_digit(lane_info[channel][2]) + hex_to_digit(lane_info[channel][3])
                 lane_time += ':' if lane_time.strip() else ' '
                 lane_time += hex_to_digit(lane_info[channel][4]) + hex_to_digit(lane_info[channel][5])
                 lane_time += '.' if lane_time.strip() else ' '
                 lane_time += hex_to_digit(lane_info[channel][6]) + hex_to_digit(lane_info[channel][7])
-
-            update["lane_time%i"%channel] = lane_time
-            update["lane_place%i"%channel] = place
-            
+                s = "%4s: %s %s %s" % (channel, lane, place, lane_time)
+                update["lane_time%i"%channel] = lane_time
+                
             print_at(channel+1, 0, " " * 20)
             print_at(channel+1, 0, "%4s: %s %s %s" % (channel, lane, place, lane_time))
-
+            
         if (channel == 0) and not format_display:
             # Running time
             while len(l):
@@ -164,6 +168,8 @@ def parse_line(l, out = None):
             running_time += '.' if running_time.strip() else ' '
             running_time += hex_to_digit(time_info[6]) + hex_to_digit(time_info[7])
             update["running_time"] = running_time
+            
+            s = "Running Time: " + running_time
 
         if (channel == 12) and not format_display:
             # Event / Heat
@@ -177,6 +183,8 @@ def parse_line(l, out = None):
 
             print_at(0, 0, " Event:" +  update["current_event"] + " Heat:" + update["current_heat"] + "    ")
             
+            s = " Event:" +  update["current_event"] + " Heat:" + update["current_heat"] + "    "
+            
             if last_event_sent != event_tuple:
                 last_event_sent = event_tuple
                 update["event_name"] = event_info.get_event_name(event_tuple[0])
@@ -184,12 +192,16 @@ def parse_line(l, out = None):
                 for i in range(1,11):
                     update["lane_name%i" % i] = event_info.get_display_string(event_tuple[0], event_tuple[1], i)
 
+        if out:
+            if s:
+                out.write(' '*max(0, 50-len(k)) + " # " + s)
+            out.write("\n")
     except IndexError:
         traceback.print_exc()
         
     finally:
         #Output anything we got
-        if len(update) and (datetime.datetime.now() > next_update):
+        if "current_event" in update or "running_time" in update:
             socketio.emit('update_scoreboard', update, namespace='/scoreboard')
             next_update = datetime.datetime.now() + datetime.timedelta(seconds=0.2)
             update.clear()
