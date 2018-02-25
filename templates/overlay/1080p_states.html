@@ -83,7 +83,7 @@
 
 table.scoreboard_table td{
     overflow: hidden;
-    white-space: nowrap;
+    white-space: pre;
     max-width: 0px;
     width: 0px;
 }
@@ -158,7 +158,8 @@ table.scoreboard_table th{
 var scoreboard_updated = true;
 
 var lane_running = {};
-var lane_blank = {};
+var lane_place_blank = {};
+var lane_time_blank = {};
 var last_event = 0;
 var last_heat = 0;
 var last_state = 0; // hidden
@@ -325,10 +326,16 @@ function mode_to_results(){
                 lane_running[k.replace("lane_running","")]=s[k];
             }
             
-            // Check for lane blank
+            // Check for lane time blank
             if(k.startsWith("lane_time")){
-                lane_blank[k.replace("lane_time","")] = (s[k].trim() == "");
+                lane_time_blank[k.replace("lane_time","")] = (s[k].trim() == "");
             }
+            
+            // Check for lane place blank
+            if(k.startsWith("lane_place")){
+                lane_place_blank[k.replace("lane_place","")] = (s[k].trim() == "");
+            }
+
         })
         
         // Fill in the running time
@@ -359,7 +366,10 @@ function mode_to_results(){
         if (current_state != 1) {
             var all_done = true;
             for (var i=1;i<=10;i++){
-                if ((i in lane_running) && (lane_running[i] == true)) {
+                if (((i in lane_running) && lane_running[i]) ||
+                   (((i in lane_place_blank) && lane_place_blank[i] &&
+                    ((i in lane_time_blank) && !lane_time_blank[i])))) 
+                {
                     all_done = false;
                     break;
                 }

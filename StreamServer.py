@@ -26,6 +26,7 @@ settings = {
     }
 in_file = None
 out_file = None
+in_speed = 1.0
 
 # Event Settings
 event_info = HytekEventLoader("mm4heatsheet3col.csv")
@@ -221,11 +222,12 @@ def main_thread_worker():
             for d in re.finditer(r"\[([0-9.]+)\]\s*|([0-9a-fA-F]{2})\s+", f.read()):
                 if d.group(1):
                     if start_time:
-                        delay = float(d.group(1)) - time.time() - start_time
+                        delay = float(d.group(1)) - in_speed*time.time() - start_time
                         if delay > 0:
                             socketio.sleep(delay)
+                        print_at(13, 0, " " + d.group(1) + "   ")
                     else:
-                        start_time = float(d.group(1)) - time.time()
+                        start_time = float(d.group(1)) - in_speed*time.time()
                     continue
                 c = int(d.group(2), 16)
                 if c:
@@ -389,6 +391,8 @@ if __name__ == '__main__':
         help='Output file to dump data')
     parser.add_argument('--portlist', '-l', action = 'store_const', const=True, default = False,
         help='List of available serial ports')        
+    parser.add_argument('--speed', '-s', action = 'store', default = 1.0, dest='in_speed',
+        help='Speed to play input file at')
     args = parser.parse_args()
 
     try:
@@ -400,6 +404,7 @@ if __name__ == '__main__':
             settings['serial_port'] = args.port
         in_file = args.in_file
         out_file = args.out
+        in_speed = float(args.in_speed)
         clear_console()
         socketio.run(app, host="0.0.0.0")
     except:
