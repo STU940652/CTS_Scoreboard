@@ -1,10 +1,10 @@
 #! python3
-from flask import Flask, render_template, Response, request, abort, redirect, url_for
+import flask
 import flask_login
-from flask_socketio import SocketIO, send, emit
+import flask_socketio
 import datetime
 import traceback
-from ctypes import *
+import ctypes
 import serial
 import serial.tools.list_ports
 import re
@@ -31,13 +31,13 @@ in_speed = 1.0
 # Event Settings
 event_info = HytekEventLoader("mm4heatsheet3col.csv")
 
-app = Flask(__name__)
+app = flask.Flask(__name__)
 # config
 app.config.update(
     DEBUG = False,
     SECRET_KEY = 'rimnqiuqnewiornhf7nfwenjmqvliwynhtmlfnlsklrmqwe'
 )
-socketio = SocketIO(app)
+socketio = flask_socketio.SocketIO(app)
 
 main_thread = None
 event_heat_info = [' ',' ',' ',' ',' ',' ',' ',' ']
@@ -66,44 +66,44 @@ def load_settings():
 ## Windows stuff to move the cursor
 STD_OUTPUT_HANDLE = -11
  
-class COORD(Structure):
+class COORD(ctypes.Structure):
     pass
  
-COORD._fields_ = [("X", c_short), ("Y", c_short)]
+COORD._fields_ = [("X", ctypes.c_short), ("Y", ctypes.c_short)]
 
-class SMALL_RECT(Structure):
+class SMALL_RECT(ctypes.Structure):
     pass
  
-SMALL_RECT._fields_ = [("Left", c_short), ("Top", c_short), ("Right", c_short), ("Bottom", c_short)]
+SMALL_RECT._fields_ = [("Left", ctypes.c_short), ("Top", ctypes.c_short), ("Right", ctypes.c_short), ("Bottom", ctypes.c_short)]
  
-class CONSOLE_SCREEN_BUFFER_INFO(Structure):
+class CONSOLE_SCREEN_BUFFER_INFO(ctypes.Structure):
     pass
  
 CONSOLE_SCREEN_BUFFER_INFO._fields_ = [
     ("dwSize", COORD),
     ("dwCursorPosition", COORD),
-    ("wAttributes", c_ushort),
+    ("wAttributes", ctypes.c_ushort),
     ("srWindow", SMALL_RECT),
     ("dwMaximumWindowSize", COORD)
 ] 
 def print_at(r, c, s):
-    h = windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
-    windll.kernel32.SetConsoleCursorPosition(h, COORD(c, r))
+    h = ctypes.windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
+    ctypes.windll.kernel32.SetConsoleCursorPosition(h, COORD(c, r))
  
     c = s.encode("windows-1252")
-    windll.kernel32.WriteConsoleA(h, c_char_p(c), len(c), None, None) 
+    ctypes.windll.kernel32.WriteConsoleA(h, ctypes.c_char_p(c), len(c), None, None) 
 
 def clear_console():
-    h = windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
+    h = ctypes.windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
  
     csbi = CONSOLE_SCREEN_BUFFER_INFO()
-    windll.kernel32.GetConsoleScreenBufferInfo(h, pointer(csbi))
+    ctypes.windll.kernel32.GetConsoleScreenBufferInfo(h, ctypes.pointer(csbi))
     dwConSize = csbi.dwSize.X * csbi.dwSize.Y
  
     scr = COORD(0, 0)
-    windll.kernel32.FillConsoleOutputCharacterA(h, c_char(b" "), dwConSize, scr, pointer(c_ulong()))
-    windll.kernel32.FillConsoleOutputAttribute(h, csbi.wAttributes, dwConSize, scr, pointer(c_ulong()))
-    windll.kernel32.SetConsoleCursorPosition(h, scr)    
+    ctypes.windll.kernel32.FillConsoleOutputCharacterA(h, ctypes.c_char(b" "), dwConSize, scr, ctypes.pointer(ctypes.c_ulong()))
+    ctypes.windll.kernel32.FillConsoleOutputAttribute(h, csbi.wAttributes, dwConSize, scr, ctypes.pointer(ctypes.c_ulong()))
+    ctypes.windll.kernel32.SetConsoleCursorPosition(h, scr)    
             
 def hex_to_digit(c):
     c = c & 0x0F
@@ -290,17 +290,17 @@ def ws_scoreboard():
 @app.route('/overlay/<name>')
 def route_overlay(name):
     overlay_name = "overlay/" + name + '.html'
-    return render_template(overlay_name, meet_title=settings['meet_title'], test_background='test' in request.args.keys())
+    return flask.render_template(overlay_name, meet_title=settings['meet_title'], test_background='test' in flask.request.args.keys())
     
 @app.route('/settings', methods=['POST', 'GET'])
 @flask_login.login_required
 def route_settings():
     global settings
-    if request.method == 'POST':
+    if flask.request.method == 'POST':
         modified = False
         for k in settings.keys(): 
-            if k in request.form and settings[k]!=request.form.get(k):
-                settings[k]=request.form.get(k)
+            if k in flask.request.form and settings[k]!=flask.request.form.get(k):
+                settings[k]=flask.request.form.get(k)
                 modified = True
         
         if modified:
@@ -311,7 +311,7 @@ def route_settings():
     if settings['serial_port'] not in [port for port,desc in comm_port_list]:
         comm_port_list.insert(0, (settings['serial_port'], settings['serial_port']))
  
-    return render_template('settings.html', 
+    return flask.render_template('settings.html', 
                 meet_title=settings['meet_title'], 
                 serial_port=settings['serial_port'],
                 serial_port_list=comm_port_list,
@@ -320,16 +320,16 @@ def route_settings():
 # somewhere to login
 @app.route("/login", methods=["GET", "POST"])
 def route_login():
-    if request.method == 'POST':
-        if ((request.form['username']==settings['username']) and
-            (request.form['password']==settings['password'])):        
+    if flask.request.method == 'POST':
+        if ((flask.request.form['username']==settings['username']) and
+            (flask.request.form['password']==settings['password'])):        
             user = User(0)
             flask_login.login_user(user)
-            return redirect(request.args.get("next"))
+            return flask.redirect(flask.request.args.get("next"))
         else:
-            return abort(401)
+            return flask.abort(401)
     else:
-        return render_template('login.html')
+        return flask.render_template('login.html')
 
 
 # somewhere to logout
@@ -337,13 +337,13 @@ def route_login():
 @flask_login.login_required
 def route_logout():
     flask_login.logout_user()
-    return redirect('/')
+    return flask.redirect('/')
 
 
 # handle login failed
 @app.errorhandler(401)
 def page_not_found(e):
-    return render_template('login.html', login_failed=True)
+    return flask.render_template('login.html', login_failed=True)
     
 
 def has_no_empty_params(rule):
@@ -358,7 +358,7 @@ def route_site_map():
         # Filter out rules we can't navigate to in a browser
         # and rules that require parameters
         if "GET" in rule.methods and has_no_empty_params(rule):
-            url = url_for(rule.endpoint, **(rule.defaults or {}))
+            url = flask.url_for(rule.endpoint, **(rule.defaults or {}))
             title = rule.endpoint.replace("_"," ")
             if title.startswith('route '):
                 title = title[6:]
@@ -369,7 +369,7 @@ def route_site_map():
         links.append( (file[file.startswith("templates") and len("templates"):].rsplit('.',1)[0], "Overlay " + os.path.basename(file).rsplit('.',1)[0]) )
     # links is now a list of url, endpoint tuple
     links.sort(key=lambda a: '_' if (a[1] == 'Site List') else a[1])
-    return render_template('site_map.html', links=links)
+    return flask.render_template('site_map.html', links=links)
     
 # callback to reload the user object        
 @login_manager.user_loader
