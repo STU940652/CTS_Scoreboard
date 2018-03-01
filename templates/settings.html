@@ -75,6 +75,25 @@ function password_check(form) {
             </div>
         </div>
     </form></div></div>
+
+    <div class="row"><div class="col-lg-8"><form action="/settings" method="POST" enctype="multipart/form-data">
+        <div class="input-group">
+            <label for="meet_schedule">Hytek Schedule</label>
+            <div class="input-group">
+                <input id="meet_schedule"
+                        name="meet_schedule"
+                        value="{{ meet_schedule }}" 
+                        class="form-control" 
+                        aria-label="..."
+                        oninput="document.getElementById('meet_schedule_submit').disabled=false;"
+                        type="file"></input>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="submit" id="meet_schedule_submit">Upload</button>
+                </span>
+            </div>
+        </div>
+    </form></div></div>    
+    
     <div class="row"><div class="col-lg-6"><form action="/settings" method="POST">
         <div class="input-group">
             <label for="serial_port">Serial Port</label>

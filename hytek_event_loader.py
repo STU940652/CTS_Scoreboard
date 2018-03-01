@@ -1,4 +1,5 @@
 import csv
+import pickle
 
 # 6 #1 Girls 8 & Under 100 Yard Medley Relay
 # 7 #1   ...   (Girls 8 & Under 100 Yard Medley Relay)
@@ -58,41 +59,47 @@ class HytekEventLoader ():
     def load( self, file_name):
         self.clear()
         with open(file_name, "rt") as schedule_file:
-            reader = csv.reader(schedule_file)
-            for row in reader:               
-                event_number, event_name = row[6].split(' ',1)
-                event_number = int(event_number.replace("#",""))
-                self.event_names[event_number] = event_name
-                
-                heat_number = int(row[97].split()[1])
-                
-                lane = int(row[98])
-                
-                if row[93] == "Team":
-                    # Relays
-                    team = row[99]
-                elif row[95].strip() == "Team":
-                    # Indv
-                    team = row[101]
-                else:
-                    team = ""
-                    
-                if row[93] == "Name":
-                    # Indv
-                    name = ' '.join(reversed(row[99].split(','))).strip()
-                elif row[95] == "Relay":
-                    # Relay
-                    name = "Relay " + row[101]
-                else:
-                    name = ""
-                    
-                display_string = (team + '    ')[:4] + ' ' + name
-                self.max_display_string_length = max(self.max_display_string_length, len(display_string))
+            self.load_from_file( schedule_file)
 
-                if (event_number, heat_number) not in self.events:
-                    self.events[(event_number, heat_number)] = {}
-                    
-                self.events[(event_number, heat_number)][lane] = display_string
+    def load_from_bytestream( self, stream):
+        self.load_from_file( [x.decode('utf8') for x in stream])
+        
+    def load_from_file( self, schedule_file):
+        reader = csv.reader( schedule_file)
+        for row in reader:               
+            event_number, event_name = row[6].split(' ',1)
+            event_number = int(event_number.replace("#",""))
+            self.event_names[event_number] = event_name
+            
+            heat_number = int(row[97].split()[1])
+            
+            lane = int(row[98])
+            
+            if row[93] == "Team":
+                # Relays
+                team = row[99]
+            elif row[95].strip() == "Team":
+                # Indv
+                team = row[101]
+            else:
+                team = ""
+                
+            if row[93] == "Name":
+                # Indv
+                name = ' '.join(reversed(row[99].split(','))).strip()
+            elif row[95] == "Relay":
+                # Relay
+                name = "Relay " + row[101]
+            else:
+                name = ""
+                
+            display_string = (team + '    ')[:4] + ' ' + name
+            self.max_display_string_length = max(self.max_display_string_length, len(display_string))
+
+            if (event_number, heat_number) not in self.events:
+                self.events[(event_number, heat_number)] = {}
+                
+            self.events[(event_number, heat_number)][lane] = display_string
                 
     def get_event_name( self, event_number):
         try:
@@ -111,7 +118,17 @@ class HytekEventLoader ():
             return self.events[ (event_number, heat_number) ][lane]
         except:
             return ""
-
+            
+    def to_object( self):
+        return pickle.dumps({"event_names": self.event_names, "events": self.events}, protocol=0).decode('utf8')
+        
+    def from_object( self, p):
+        #try:
+            o = pickle.loads(p.encode('utf8'))
+            self.event_names = o['event_names']
+            self.events = o['events']
+        #except:
+        #    pass
             
 if __name__ == "__main__":
     s = HytekEventLoader("mm4heatsheet3col.csv")

@@ -29,7 +29,7 @@ out_file = None
 in_speed = 1.0
 
 # Event Settings
-event_info = HytekEventLoader("mm4heatsheet3col.csv")
+event_info = HytekEventLoader()
 
 app = flask.Flask(__name__)
 # config
@@ -61,6 +61,8 @@ def load_settings():
     try:
         with open(settings_file, "rt") as f:
             settings.update(json.load(f))
+        if 'event_info' in settings:
+            event_info.from_object(settings['event_info'])
     except: pass
 
 ## Windows stuff to move the cursor
@@ -298,6 +300,17 @@ def route_settings():
     global settings
     if flask.request.method == 'POST':
         modified = False
+        
+        # check if the post request has the file part
+        if 'meet_schedule' in flask.request.files:
+            file = flask.request.files['meet_schedule']
+            # if user does not select file, browser also
+            # submit a empty part without filename
+            if file and file.filename and file.filename.endswith('.csv'):
+                event_info.load_from_bytestream(file.stream)
+                settings['event_info'] = event_info.to_object()
+                modified = True
+        
         for k in settings.keys(): 
             if k in flask.request.form and settings[k]!=flask.request.form.get(k):
                 settings[k]=flask.request.form.get(k)
