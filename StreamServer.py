@@ -28,6 +28,7 @@ settings = {
 in_file = None
 out_file = None
 in_speed = 1.0
+debug_console = False
 
 # Event Settings
 event_info = HytekEventLoader()
@@ -68,7 +69,8 @@ def load_settings():
 
 ## Stuff to move the cursor
 def print_at(r, c, s):
-    ap.output(c, r, s)   
+    if debug_console:
+        ap.output(c, r, s)   
             
 def hex_to_digit(c):
     c = c & 0x0F
@@ -173,7 +175,7 @@ def parse_line(l, out = None):
             socketio.emit('update_scoreboard', update, namespace='/scoreboard')
             update.clear()
             
-        if (datetime.datetime.now() > next_update):
+        if (datetime.datetime.now() > next_update) and debug_console:
             next_update = datetime.datetime.now() + datetime.timedelta(seconds=0.2)
             ap.render()
 
@@ -295,6 +297,16 @@ def route_settings():
                 serial_port=settings['serial_port'],
                 serial_port_list=comm_port_list,
                 user_name=settings['username'])
+
+@app.route('/schedule_preview')
+@flask_login.login_required
+def route_schedule_preview():
+    event_heat = list(event_info.events.keys())
+    event_heat.sort()
+    return flask.render_template('schedule_preview.html', 
+                event_heat = event_heat, 
+                event_names = event_info.event_names, 
+                events = event_info.events)
     
 # somewhere to login
 @app.route("/login", methods=["GET", "POST"])
@@ -372,6 +384,8 @@ if __name__ == '__main__':
         help='List of available serial ports')        
     parser.add_argument('--speed', '-s', action = 'store', default = 1.0, dest='in_speed',
         help='Speed to play input file at')
+    parser.add_argument('--debug', '-d', action = 'store_const', const=True, default = False,
+        help='Display debug info at console')
     args = parser.parse_args()
 
     try:
@@ -384,6 +398,7 @@ if __name__ == '__main__':
         in_file = args.in_file
         out_file = args.out
         in_speed = float(args.in_speed)
+        debug_console = args.debug
         ap.c()
         socketio.run(app, host="0.0.0.0")
     except:
