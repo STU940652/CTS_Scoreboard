@@ -13,6 +13,7 @@ import json
 import os.path
 import glob
 from hytek_event_loader import HytekEventLoader
+import ap
 
 DEBUG = False
 #DEBUG = True
@@ -65,47 +66,9 @@ def load_settings():
             event_info.from_object(settings['event_info'])
     except: pass
 
-## Windows stuff to move the cursor
-STD_OUTPUT_HANDLE = -11
- 
-class COORD(ctypes.Structure):
-    pass
- 
-COORD._fields_ = [("X", ctypes.c_short), ("Y", ctypes.c_short)]
-
-class SMALL_RECT(ctypes.Structure):
-    pass
- 
-SMALL_RECT._fields_ = [("Left", ctypes.c_short), ("Top", ctypes.c_short), ("Right", ctypes.c_short), ("Bottom", ctypes.c_short)]
- 
-class CONSOLE_SCREEN_BUFFER_INFO(ctypes.Structure):
-    pass
- 
-CONSOLE_SCREEN_BUFFER_INFO._fields_ = [
-    ("dwSize", COORD),
-    ("dwCursorPosition", COORD),
-    ("wAttributes", ctypes.c_ushort),
-    ("srWindow", SMALL_RECT),
-    ("dwMaximumWindowSize", COORD)
-] 
+## Stuff to move the cursor
 def print_at(r, c, s):
-    h = ctypes.windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
-    ctypes.windll.kernel32.SetConsoleCursorPosition(h, COORD(c, r))
- 
-    c = s.encode("windows-1252")
-    ctypes.windll.kernel32.WriteConsoleA(h, ctypes.c_char_p(c), len(c), None, None) 
-
-def clear_console():
-    h = ctypes.windll.kernel32.GetStdHandle(STD_OUTPUT_HANDLE)
- 
-    csbi = CONSOLE_SCREEN_BUFFER_INFO()
-    ctypes.windll.kernel32.GetConsoleScreenBufferInfo(h, ctypes.pointer(csbi))
-    dwConSize = csbi.dwSize.X * csbi.dwSize.Y
- 
-    scr = COORD(0, 0)
-    ctypes.windll.kernel32.FillConsoleOutputCharacterA(h, ctypes.c_char(b" "), dwConSize, scr, ctypes.pointer(ctypes.c_ulong()))
-    ctypes.windll.kernel32.FillConsoleOutputAttribute(h, csbi.wAttributes, dwConSize, scr, ctypes.pointer(ctypes.c_ulong()))
-    ctypes.windll.kernel32.SetConsoleCursorPosition(h, scr)    
+    ap.output(c, r, s)   
             
 def hex_to_digit(c):
     c = c & 0x0F
@@ -208,8 +171,11 @@ def parse_line(l, out = None):
         #Output anything we got
         if "current_event" in update or "running_time" in update:
             socketio.emit('update_scoreboard', update, namespace='/scoreboard')
-            next_update = datetime.datetime.now() + datetime.timedelta(seconds=0.2)
             update.clear()
+            
+        if (datetime.datetime.now() > next_update):
+            next_update = datetime.datetime.now() + datetime.timedelta(seconds=0.2)
+            ap.render()
 
 
 def main_thread_worker():
@@ -418,7 +384,7 @@ if __name__ == '__main__':
         in_file = args.in_file
         out_file = args.out
         in_speed = float(args.in_speed)
-        clear_console()
+        ap.c()
         socketio.run(app, host="0.0.0.0")
     except:
         traceback.print_exc()
