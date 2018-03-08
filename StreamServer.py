@@ -1,4 +1,4 @@
-#! python3
+#! /usr/bin/python3
 import flask
 import flask_login
 import flask_socketio
