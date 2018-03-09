@@ -176,7 +176,7 @@ function on_timer(){
     hoursAmPm = (hoursAmPm != 0) ? hoursAmPm : 12;
     document.getElementById("meet_datetime").innerHTML = months[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear() + " " + hoursAmPm + ":" + ("0" + d.getMinutes()).slice(-2);
     
-    //if (!scoreboard_updated) document.getElementById("scoreboard").style.display = "none";
+    if (!scoreboard_updated) mode_to_hidden();
     scoreboard_updated = false;
 }
 
@@ -187,6 +187,7 @@ function init() {
 }
 
 function mode_to_hidden(){
+    current_state = 0;
     document.getElementById("scoreboard").style.opacity = 0;
 }
 
@@ -408,12 +409,22 @@ function mode_to_results(){
                     break;
                 case 1: // Intro 
                     mode_to_intro();
+                    setTimeout (function() {
+                        if (current_state == 1) {
+                            mode_to_hidden();
+                        }
+                    }, 20000);
                     break;
                 case 2: // Running
                     mode_to_running();
                     break;
                 case 3: // Results
                     mode_to_results();
+                    setTimeout (function() {
+                        if (current_state == 3) {
+                            mode_to_hidden();
+                        }
+                    }, 20000);
                     break;
             }
             last_state = current_state;
