@@ -187,13 +187,13 @@ function init() {
 }
 
 function mode_to_hidden(){
-    current_state = 0;
+    document.getElementById("event_name").style.display = "none";
     document.getElementById("scoreboard").style.opacity = 0;
 }
 
 function mode_to_intro(){
     // Need to hide event place and time column, show name
-    //document.getElementById("event_name").style.display = "block";
+    document.getElementById("event_name").style.display = "block";
     document.getElementById("scoreboard_place_col").style.width = '0px';
     document.getElementById("scoreboard_place_col").style.maxWidth = '0px';
     document.getElementById("scoreboard_time_col").style.width = '0px';
@@ -209,7 +209,7 @@ function mode_to_intro(){
 
 function mode_to_running(){
     // Need to hide event title and name column
-    //document.getElementById("event_name").style.display = "none";
+    document.getElementById("event_name").style.display = "block";
     document.getElementById("scoreboard_place_col").style.width = '80px';
     document.getElementById("scoreboard_place_col").style.maxWidth = '80px';
     document.getElementById("scoreboard_time_col").style.width = '150px';
@@ -225,7 +225,7 @@ function mode_to_running(){
     
 function mode_to_results(){
     // Need to hide event title and name column
-    //document.getElementById("event_name").style.display = "block";
+    document.getElementById("event_name").style.display = "block";
     document.getElementById("scoreboard_place_col").style.width = '80px';
     document.getElementById("scoreboard_place_col").style.maxWidth = '80px';
     document.getElementById("scoreboard_time_col").style.width = '150px';
