@@ -52,9 +52,9 @@ class HytekEventLoader ():
             self.load( file_name)
 
     def clear( self):
-        event_names = {}
-        events = {}
-        max_display_string_length = 0
+        self.event_names.clear()
+        self.events.clear()
+        self.max_display_string_length = 0
             
     def load( self, file_name):
         self.clear()

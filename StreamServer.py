@@ -297,7 +297,16 @@ def route_settings():
                 serial_port=settings['serial_port'],
                 serial_port_list=comm_port_list,
                 user_name=settings['username'])
-
+                
+@app.route('/schedule_clear')
+@flask_login.login_required
+def route_schedule_clear():
+    event_info.clear()
+    settings['event_info'] = event_info.to_object()
+    with open(settings_file, "wt") as f:
+        json.dump(settings, f, sort_keys=True, indent=4)
+    return flask.redirect('/settings')
+                
 @app.route('/schedule_preview')
 @flask_login.login_required
 def route_schedule_preview():
