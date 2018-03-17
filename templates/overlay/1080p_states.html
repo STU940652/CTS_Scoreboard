@@ -160,6 +160,7 @@ var scoreboard_updated = true;
 var lane_running = {};
 var lane_place_blank = {};
 var lane_time_blank = {};
+var lane_name_blank = {};
 var last_event = 0;
 var last_heat = 0;
 var last_state = 0; // hidden
@@ -342,6 +343,10 @@ function mode_to_results(){
             // Check for lane place blank
             if(k.startsWith("lane_place")){
                 lane_place_blank[k.replace("lane_place","")] = (s[k].trim() == "");
+            }            
+            // Check for lane name blank
+            if(k.startsWith("lane_name")){
+                lane_name_blank[k.replace("lane_name","")] = (s[k].trim() == "");
             }
 
         })
@@ -385,6 +390,18 @@ function mode_to_results(){
             if (all_done) current_state = 3; // Results
         }
         
+        // If there are no names, don't do intro or results
+        if ((current_state == 1) || (current_state == 3)) {
+            var no_names = true;
+            for (var i=1;i<=6;i++){
+                if ((i in lane_name_blank) && !lane_name_blank[i]) 
+                {
+                    no_names = false;
+                    break;
+                }
+            }
+            if (no_names) current_state = 2; // Running
+        }
         
         // Check for any lanes running
         for (var i=1; i<=6; i++) {
