@@ -256,6 +256,33 @@ def ws_scoreboard():
     if(main_thread is None):
         main_thread = socketio.start_background_task(target=main_thread_worker)
 
+@app.route('/next_heat')
+def route_next_heat():
+    global last_event_sent
+    
+    update={}
+    
+    event_list = list(event_info.events.keys())
+    event_list.sort()
+
+    try:
+        event_tuple = event_list[event_list.index(last_event_sent)+1]
+    except:
+        event_tuple = event_list[0]
+    
+    last_event_sent = event_tuple
+    update["current_event"] = str(event_tuple[0])
+    update["current_heat"] = str(event_tuple[1])
+    update["event_name"] = event_info.get_event_name(event_tuple[0])
+    
+    for i in range(1,11):
+        update["lane_name%i" % i] = event_info.get_display_string(event_tuple[0], event_tuple[1], i)
+
+    socketio.emit('update_scoreboard', update, namespace='/scoreboard')
+
+    return (str(event_tuple))
+
+        
 # Scoreboard Templates
 @app.route('/overlay/<name>')
 def route_overlay(name):
