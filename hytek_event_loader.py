@@ -65,31 +65,36 @@ class HytekEventLoader ():
         self.load_from_file( [x.decode('utf8') for x in stream])
         
     def load_from_file( self, schedule_file):
+        self.clear()
         reader = csv.reader( schedule_file)
-        for row in reader:               
-            event_number, event_name = row[6].split(' ',1)
-            event_number = int(event_number.replace("#",""))
-            self.event_names[event_number] = event_name
+        for row in reader:
+            if "HY-TEK's MEET MANAGER 4.0" in row[1]:
+                column_offset = 6
+            elif "HY-TEK's MEET MANAGER 5.0" in row[1]:
+                column_offset = 8
             
-            heat_number = int(row[97].split()[1])
+            # Hack to remove whitespaces
+            for i in range(len(row)):
+                row[i]=row[i].strip()
             
-            lane = int(row[98])
+            event_number_name = row[6]
+            if event_number_name.startswith("#"): event_number_name = event_number_name[1:]
+            if event_number_name.startswith("Event "): event_number_name = event_number_name[6:]
+            event_number, event_name = event_number_name.strip().split(' ',1)
+            event_number = int(event_number.strip())
+            self.event_names[event_number] = event_name.strip()
             
-            if row[93] == "Team":
-                # Relays
-                team = row[99]
-            elif row[95].strip() == "Team":
+            lane_column = row.index("Lane",92,107)+column_offset
+            heat_number = int(row[lane_column-1].split()[1])            
+            lane = int(row[lane_column])
+            team = row[row.index("Team",92,107)+column_offset]
+
+            if "Name" in row[92:107]:   
                 # Indv
-                team = row[101]
-            else:
-                team = ""
-                
-            if row[93] == "Name":
-                # Indv
-                name = ' '.join(reversed(row[99].split(','))).strip()
-            elif row[95] == "Relay":
+                name = ' '.join(reversed(row[row.index("Name",92,107)+column_offset].split(','))).strip()
+            elif "Relay" in row[92:107]:
                 # Relay
-                name = "Relay " + row[101]
+                name = "Relay " + row[row.index("Relay",92,107)+column_offset]
             else:
                 name = ""
                 
