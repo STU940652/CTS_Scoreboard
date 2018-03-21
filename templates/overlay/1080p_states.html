@@ -206,6 +206,9 @@ function mode_to_intro(){
             document.getElementById("scoreboard").style.opacity = 1;
         }, 500);
     }
+    setTimeout ( function() {
+        document.getElementById("scoreboard_time_col").innerHTML = '';
+    }, 500);
 }
 
 function mode_to_running(){
@@ -215,6 +218,7 @@ function mode_to_running(){
     document.getElementById("scoreboard_place_col").style.maxWidth = '80px';
     document.getElementById("scoreboard_time_col").style.width = '150px';
     document.getElementById("scoreboard_time_col").style.maxWidth = '150px';
+    document.getElementById("scoreboard_time_col").innerHTML = 'Time';
     document.getElementById("scoreboard_name_col").style.width = '0px';
     document.getElementById("scoreboard_name_col").style.maxWidth = '0px';
     if (document.getElementById("scoreboard").style.opacity != 1) {
@@ -231,6 +235,7 @@ function mode_to_results(){
     document.getElementById("scoreboard_place_col").style.maxWidth = '80px';
     document.getElementById("scoreboard_time_col").style.width = '150px';
     document.getElementById("scoreboard_time_col").style.maxWidth = '150px';
+    document.getElementById("scoreboard_time_col").innerHTML = 'Time';
     document.getElementById("scoreboard_name_col").style.width = '400px';
     document.getElementById("scoreboard_name_col").style.maxWidth = '400px';
     if (document.getElementById("scoreboard").style.opacity != 1) {
