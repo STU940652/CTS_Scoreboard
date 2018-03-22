@@ -92,13 +92,13 @@ class HytekEventLoader ():
             if "Name" in row[92:107]:   
                 # Indv
                 name = ' '.join(reversed(row[row.index("Name",92,107)+column_offset].split(','))).strip()
+                display_string = (team + '    ')[:4] + ' ' + name
             elif "Relay" in row[92:107]:
                 # Relay
-                name = "Relay " + row[row.index("Relay",92,107)+column_offset]
+                display_string = team
             else:
-                name = ""
-                
-            display_string = (team + '    ')[:4] + ' ' + name
+                display_string = ""
+
             self.max_display_string_length = max(self.max_display_string_length, len(display_string))
 
             if (event_number, heat_number) not in self.events:
