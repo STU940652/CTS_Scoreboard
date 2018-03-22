@@ -256,8 +256,8 @@ def ws_scoreboard():
     if(main_thread is None):
         main_thread = socketio.start_background_task(target=main_thread_worker)
 
-@app.route('/next_heat')
-def route_next_heat():
+@socketio.on('next_heat', namespace='/scoreboard')
+def ws_next_heat(d):
     global last_event_sent
     
     update={}
@@ -280,7 +280,6 @@ def route_next_heat():
 
     socketio.emit('update_scoreboard', update, namespace='/scoreboard')
 
-    return (str(event_tuple))
 
         
 # Scoreboard Templates

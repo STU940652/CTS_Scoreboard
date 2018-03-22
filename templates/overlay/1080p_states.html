@@ -151,6 +151,12 @@ table.scoreboard_table th{
     height: 1080;
     z-index: -100;
 }
+
+.controls{
+    position: fixed;
+    top: 10;
+    left: 10;
+}
 </style>
 
 
@@ -207,7 +213,7 @@ function mode_to_intro(){
         }, 500);
     }
     setTimeout ( function() {
-        document.getElementById("scoreboard_time_col").innerHTML = '';
+        if (current_state == 1) document.getElementById("scoreboard_time_col").innerHTML = '';
     }, 500);
 }
 
@@ -278,6 +284,17 @@ function mode_to_results(){
         <div class="content_event_name"><span id="event_name" class="anim"></span></div>
         <div class="content_meet_date"><span id="meet_datetime"></span></div>
     </div>
+    {% if test_background %}
+    <div class="controls">
+        <button type="button" onclick="mode_to_hidden();">Hide</button>
+        <button type="button" onclick="mode_to_intro();">Intro</button>
+        <button type="button" onclick="mode_to_running();">Running</button>
+        <button type="button" onclick="mode_to_results();">Results</button>
+        <br/>
+        <button type="button" onclick="socket.emit('next_heat', {});">Next Heat</button>
+        
+    </div>
+    {% endif %}
 </div>
 <div class="background">
 {% if test_background %}
