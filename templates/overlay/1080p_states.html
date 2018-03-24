@@ -350,6 +350,7 @@ function mode_to_results(){
         ];
         
         var message_keys = Object.keys(s);
+        var no_names = false;
         
         message_keys.forEach( (k) => {
             if (valid_fields.indexOf(k) > 0) {
@@ -417,8 +418,8 @@ function mode_to_results(){
         }
         
         // If there are no names, don't do intro or results
+        no_names = true;
         if ((current_state == 1) || (current_state == 3)) {
-            var no_names = true;
             for (var i=1;i<=6;i++){
                 if ((i in lane_name_blank) && !lane_name_blank[i]) 
                 {
@@ -426,7 +427,6 @@ function mode_to_results(){
                     break;
                 }
             }
-            if (no_names) current_state = 2; // Running
         }
         
         // Check for any lanes running
@@ -443,7 +443,11 @@ function mode_to_results(){
                     mode_to_hidden();
                     break;
                 case 1: // Intro 
-                    mode_to_intro();
+                    if (no_names) {
+                        mode_to_running();
+                    } else {
+                        mode_to_intro();
+                    }
                     setTimeout (function() {
                         if (current_state == 1) {
                             mode_to_hidden();
@@ -454,7 +458,14 @@ function mode_to_results(){
                     mode_to_running();
                     break;
                 case 3: // Results
-                    mode_to_results();
+                    if (no_names) {
+                        mode_to_running();
+                        // Pause updates to scoreboard for 10 seconds
+                        scoreboard_paused = true;
+                        setTimeout (function() {scoreboard_paused = false;}, 10000);
+                    } else {
+                        mode_to_results();
+                    }
                     setTimeout (function() {
                         if (current_state == 3) {
                             mode_to_hidden();
