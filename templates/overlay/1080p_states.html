@@ -215,6 +215,10 @@ function mode_to_intro(){
     setTimeout ( function() {
         if (current_state == 1) document.getElementById("scoreboard_time_col").innerHTML = '';
     }, 500);
+    
+    // Pause updates to scoreboard for 10 seconds
+    scoreboard_paused = true;
+    setTimeout (function() {scoreboard_paused = false;}, 10000);
 }
 
 function mode_to_running(){
@@ -250,7 +254,7 @@ function mode_to_results(){
         }, 500);
     }
     
-    // Pause updates to scoreboard for 20 seconds
+    // Pause updates to scoreboard for 10 seconds
     scoreboard_paused = true;
     setTimeout (function() {scoreboard_paused = false;}, 10000);
 }
