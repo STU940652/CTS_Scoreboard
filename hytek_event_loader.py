@@ -65,7 +65,6 @@ class HytekEventLoader ():
         self.load_from_file( [x.decode('utf8') for x in stream])
         
     def load_from_file( self, schedule_file):
-        self.clear()
         reader = csv.reader( schedule_file)
         for row in reader:
             if "HY-TEK's MEET MANAGER 4.0" in row[1]:
