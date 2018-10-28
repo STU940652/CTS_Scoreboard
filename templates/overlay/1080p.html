@@ -71,8 +71,9 @@
     font-size: 32px;
     color: #000000;
     position: absolute;
-    top: 40;
-    left: 1380;
+    top: 25;
+    right: 25;
+    transition: opacity 0.5s;
 }
 
 .scoreboard_table{
@@ -459,7 +460,7 @@ function mode_to_results(){
                         if (current_state == 1) {
                             mode_to_hidden();
                         }
-                    }, 20000);
+                    }, 60000);
                     break;
                 case 2: // Running
                     mode_to_running();
