@@ -1,30 +1,25 @@
 <html>
 <link href="https://fonts.googleapis.com/css?family=Overpass+Mono" rel="stylesheet">
-<style>
-
+<!--
 // HEX: #cfe0e8
 // HEX: #b7d7e8
 // HEX: #87bdd8
 // HEX: #daebe8
-
-
-.content{
-    #color: #FFFFFF;
-    #font-size: 26px;
-    #font-weight: bold;
-    #text-shadow: -1px -1px 1px #000, 1px 1px 1px #000;
+-->
+<style>
+.content_outer{
     width: 1920;
     height: 1080;
     position: relative;
     z-index: 100;
 }
 
-.content2{
+.content_title_block{
     width: 800px;
     # position: relative;
-    margin-left: 30px;
-    position: relative;
-    top: 950;
+    position: absolute;
+    left: 25;
+    bottom: 25;
 }
 
 .content_meet_title{
@@ -33,6 +28,14 @@
     color: #000000;
     background-color: #87bdd8;
     padding-top: 5px;
+    padding-left: 30px;
+}
+
+.content_event_name{
+    font-family: 'Overpass Mono', monospace;
+    color: #cfe0e8;
+    font-size: 24px;
+    background-color: #505050;
     padding-left: 30px;
 }
 
@@ -63,20 +66,36 @@
     float: left;
 }
 
-.scoreboard{
+.content_scoreboard{
     font-family: 'Overpass Mono', monospace;
     font-size: 32px;
-    width: 500px;
     color: #000000;
     position: absolute;
     top: 40;
     left: 1380;
 }
 
+.scoreboard_table{
+    border-spacing:0;
+    table-layout:fixed;
+}
+
+table.scoreboard_table td{
+    overflow: hidden;
+    white-space: pre;
+    max-width: 0px;
+    width: 0px;
+}
+
+table.scoreboard_table th{
+    overflow: hidden;
+    white-space: nowrap;
+}
+
 .scoreboard_title{
     font-family: 'Overpass Mono', monospace;
     color: #000000;
-    font-size: 32px;
+    font-size: 24px;
     background-color: #87bdd8;
     width: 100%;
     text-align: center;
@@ -85,22 +104,41 @@
 .scoreboard_header{
     font-family: 'Overpass Mono', monospace;
     color: #000000;
-    font-size: 32px;
+    font-size: 24px;
     background-color: #daebe8;
 }
 
 .scoreboard_row_odd{
     font-family: 'Overpass Mono', monospace;
     color: #000000;
-    font-size: 32px;
+    font-size: 24px;
     background-color: #b7d7e8;
 }
 
 .scoreboard_row_eve{
     font-family: 'Overpass Mono', monospace;
     color: #000000;
-    font-size: 32px;
+    font-size: 24px;
     background-color: #cfe0e8;
+}
+
+.anim{
+    transition: width 0.5s, max-width 0.5s;
+}
+
+.scoreboard_name_col{
+    width: 400px;
+    max-width: 400px;
+}
+
+.scoreboard_place_col{
+    width: 80px;
+    max-width: 80px;
+}
+
+.scoreboard_time_col{
+    width: 150px;
+    max-width: 150px;
 }
 
 .background{
@@ -112,11 +150,28 @@
     height: 1080;
     z-index: -100;
 }
+
+.controls{
+    position: fixed;
+    top: 10;
+    left: 10;
+}
 </style>
 
 
 <script>
 var scoreboard_updated = true;
+
+var lane_running = {};
+var lane_place_blank = {};
+var lane_time_blank = {};
+var lane_name_blank = {};
+var last_event = 0;
+var last_heat = 0;
+var last_state = 0; // hidden
+var current_state = 0; // hidden
+var scoreboard_paused = false;
+
 
 function on_timer(){
     var months = {0: "January", 1: "February", 2: "March", 3: "April", 4: "May", 5: "June", 6: "July", 7: "August", 8: "September", 9: "October", 10: "November", 11: "December"};
@@ -127,7 +182,7 @@ function on_timer(){
     hoursAmPm = (hoursAmPm != 0) ? hoursAmPm : 12;
     document.getElementById("meet_datetime").innerHTML = months[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear() + " " + hoursAmPm + ":" + ("0" + d.getMinutes()).slice(-2);
     
-    if (!scoreboard_updated) document.getElementById("scoreboard").style.display = "none";
+    if (!scoreboard_updated) mode_to_hidden();
     scoreboard_updated = false;
 }
 
@@ -137,29 +192,115 @@ function init() {
     window.setInterval(on_timer, 30000);
 }
 
+function mode_to_hidden(){
+    document.getElementById("event_name").style.display = "none";
+    document.getElementById("scoreboard").style.opacity = 0;
+}
+
+function mode_to_intro(){
+    // Need to hide event place and time column, show name
+    document.getElementById("event_name").style.display = "block";
+    document.getElementById("scoreboard_place_col").style.width = '0px';
+    document.getElementById("scoreboard_place_col").style.maxWidth = '0px';
+    document.getElementById("scoreboard_time_col").style.width = '0px';
+    document.getElementById("scoreboard_time_col").style.maxWidth = '0px';
+    document.getElementById("scoreboard_name_col").style.width = '400px';
+    document.getElementById("scoreboard_name_col").style.maxWidth = '400px';
+    if (document.getElementById("scoreboard").style.opacity != 1) {
+        setTimeout ( function() {
+            document.getElementById("scoreboard").style.opacity = 1;
+        }, 500);
+    }
+    setTimeout ( function() {
+        if (current_state == 1) document.getElementById("scoreboard_time_col").innerHTML = '';
+    }, 500);
+    
+    // Pause updates to scoreboard for 10 seconds
+    scoreboard_paused = true;
+    setTimeout (function() {scoreboard_paused = false;}, 10000);
+}
+
+function mode_to_running(){
+    // Need to hide event title and name column
+    document.getElementById("event_name").style.display = "block";
+    document.getElementById("scoreboard_place_col").style.width = '80px';
+    document.getElementById("scoreboard_place_col").style.maxWidth = '80px';
+    document.getElementById("scoreboard_time_col").style.width = '150px';
+    document.getElementById("scoreboard_time_col").style.maxWidth = '150px';
+    document.getElementById("scoreboard_time_col").innerHTML = 'Time';
+    document.getElementById("scoreboard_name_col").style.width = '0px';
+    document.getElementById("scoreboard_name_col").style.maxWidth = '0px';
+    if (document.getElementById("scoreboard").style.opacity != 1) {
+        setTimeout ( function() {
+            document.getElementById("scoreboard").style.opacity = 1;
+        }, 500);
+    }
+}
+    
+function mode_to_results(){
+    // Need to hide event title and name column
+    document.getElementById("event_name").style.display = "block";
+    document.getElementById("scoreboard_place_col").style.width = '80px';
+    document.getElementById("scoreboard_place_col").style.maxWidth = '80px';
+    document.getElementById("scoreboard_time_col").style.width = '150px';
+    document.getElementById("scoreboard_time_col").style.maxWidth = '150px';
+    document.getElementById("scoreboard_time_col").innerHTML = 'Time';
+    document.getElementById("scoreboard_name_col").style.width = '400px';
+    document.getElementById("scoreboard_name_col").style.maxWidth = '400px';
+    if (document.getElementById("scoreboard").style.opacity != 1) {
+        setTimeout ( function() {
+            document.getElementById("scoreboard").style.opacity = 1;
+        }, 500);
+    }
+    
+    // Pause updates to scoreboard for 10 seconds
+    scoreboard_paused = true;
+    setTimeout (function() {scoreboard_paused = false;}, 10000);
+}
+
+
 </script>
 
 <body style="margin:0px" onload="init();">
-<div class="content"> 
-   <div class="scoreboard" id="scoreboard" style="display:none;">
-        <div class="scoreboard_title">Event: <span id="current_event"></span>    Heat: <span id="current_heat"></span></div>
-        <table width="100%" style="border-spacing:0;">
-            <tr class="scoreboard_header"> <td align="center">Lane</td><td align="center">Place</td><td align="center">Time</td></tr>
-            <tr class="scoreboard_row_odd"><td align="center">1</td><td id="lane_place1" align="center"></td><td align="right"><span id="lane_time1"></span>&nbsp;</td></tr>
-            <tr class="scoreboard_row_eve"><td align="center">2</td><td id="lane_place2" align="center"></td><td align="right"><span id="lane_time2"></span>&nbsp;</td></tr>
-            <tr class="scoreboard_row_odd"><td align="center">3</td><td id="lane_place3" align="center"></td><td align="right"><span id="lane_time3"></span>&nbsp;</td></tr>
-            <tr class="scoreboard_row_eve"><td align="center">4</td><td id="lane_place4" align="center"></td><td align="right"><span id="lane_time4"></span>&nbsp;</td></tr>
-            <tr class="scoreboard_row_odd"><td align="center">5</td><td id="lane_place5" align="center"></td><td align="right"><span id="lane_time5"></span>&nbsp;</td></tr>
-            <tr class="scoreboard_row_eve"><td align="center">6</td><td id="lane_place6" align="center"></td><td align="right"><span id="lane_time6"></span>&nbsp;</td></tr>
-            <tr class="scoreboard_row_odd"><td align="center">7</td><td id="lane_place7" align="center"></td><td align="right"><span id="lane_time7"></span>&nbsp;</td></tr>
-            <tr class="scoreboard_row_eve"><td align="center">8</td><td id="lane_place8" align="center"></td><td align="right"><span id="lane_time8"></span>&nbsp;</td></tr>
+<div class="content_outer"> 
+   <div class="content_scoreboard" id="scoreboard" style="display:none;">      
+        <table class="scoreboard_table">
+        <thead>
+            <tr><th colspan="4" class="scoreboard_title">Event: <span id="current_event"></span>    Heat: <span id="current_heat"></span></th></tr>
+            
+            <tr class="scoreboard_header"> 
+                <th align="center" id="scoreboard_lane_col" style="width:  80px;max-width:  80px;">Lane</th>
+                <th align="center" id="scoreboard_place_col" class="scoreboard_place_col anim">Place</th>
+                <th align="center" id="scoreboard_time_col" class="scoreboard_time_col anim">Time</th>
+                <th align="center" id="scoreboard_name_col" class="scoreboard_name_col anim">Name</th></tr>
+        </thead>
+            <tr class="scoreboard_row_odd"><td align="center">1</td><td id="lane_place1" align="center"></td><td align="right"><span id="lane_time1"></span>&nbsp;</td><td id="lane_name1" class="lane_name">&nbsp;</td></tr>
+            <tr class="scoreboard_row_eve"><td align="center">2</td><td id="lane_place2" align="center"></td><td align="right"><span id="lane_time2"></span>&nbsp;</td><td id="lane_name2" class="lane_name">&nbsp;</td></tr>
+            <tr class="scoreboard_row_odd"><td align="center">3</td><td id="lane_place3" align="center"></td><td align="right"><span id="lane_time3"></span>&nbsp;</td><td id="lane_name3" class="lane_name">&nbsp;</td></tr>
+            <tr class="scoreboard_row_eve"><td align="center">4</td><td id="lane_place4" align="center"></td><td align="right"><span id="lane_time4"></span>&nbsp;</td><td id="lane_name4" class="lane_name">&nbsp;</td></tr>
+            <tr class="scoreboard_row_odd"><td align="center">5</td><td id="lane_place5" align="center"></td><td align="right"><span id="lane_time5"></span>&nbsp;</td><td id="lane_name5" class="lane_name">&nbsp;</td></tr>
+            <tr class="scoreboard_row_eve"><td align="center">6</td><td id="lane_place6" align="center"></td><td align="right"><span id="lane_time6"></span>&nbsp;</td><td id="lane_name6" class="lane_name">&nbsp;</td></tr>
+            <tr class="scoreboard_row_odd"><td align="center">7</td><td id="lane_place7" align="center"></td><td align="right"><span id="lane_time7"></span>&nbsp;</td><td id="lane_name7" class="lane_name">&nbsp;</td></tr>
+            <tr class="scoreboard_row_eve"><td align="center">8</td><td id="lane_place8" align="center"></td><td align="right"><span id="lane_time8"></span>&nbsp;</td><td id="lane_name8" class="lane_name">&nbsp;</td></tr>
         </table>
     </div>
-    <div class="content2">
+    <div class="content_title_block">
         <div class="content_meet_title">{{ meet_title }}</div>
+        <div class="content_event_name"><span id="event_name" class="anim"></span></div>
         <div class="content_meet_date"><span id="meet_datetime"></span></div>
     </div>
- </div>
+    {% if test_background %}
+    <div class="controls">
+        <button type="button" onclick="mode_to_hidden();">Hide</button>
+        <button type="button" onclick="mode_to_intro();">Intro</button>
+        <button type="button" onclick="mode_to_running();">Running</button>
+        <button type="button" onclick="mode_to_results();">Results</button>
+        <br/>
+        <button type="button" onclick="socket.emit('next_heat', {});">Next Heat</button>
+        
+    </div>
+    {% endif %}
+</div>
 <div class="background">
 {% if test_background %}
 <img src="{{url_for('static', filename='IMG_2481.PNG')}}" width="100%"/>
@@ -170,17 +311,25 @@ function init() {
 
 <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
 <script type="text/javascript" charset="utf-8">
+    var s = {}
+
     var socket = io.connect('http://' + document.domain + ':' + location.port + '/scoreboard');
-    socket.on('connect', function() {
-        socket.emit('start_scoreboard', {data: 'I\'m connected!'});
-    });
+    socket.on('connect', function() {});
     
-    socket.on('update_scoreboard', (s) => {
+    socket.on('update_scoreboard', (new_s) => {
         scoreboard_updated = true;
+        
+        for (k in new_s) {
+            s[k]=new_s[k];
+        }
+        
+        if (scoreboard_paused) return;
+        
         var valid_fields = [
             "content_meet_title",
             "current_event",
             "current_heat",
+            "event_name",
             "lane_place1",
             "lane_place2",
             "lane_place3",
@@ -196,18 +345,147 @@ function init() {
             "lane_time5",
             "lane_time6",
             "lane_time7",
-            "lane_time8"
+            "lane_time8",
+            "lane_name1",
+            "lane_name2",
+            "lane_name3",
+            "lane_name4",
+            "lane_name5",
+            "lane_name6",
+            "lane_name7",
+            "lane_name8",
         ];
         
         var message_keys = Object.keys(s);
+        var no_names = false;
         
         message_keys.forEach( (k) => {
             if (valid_fields.indexOf(k) > 0) {
                 document.getElementById(k).innerHTML = s[k];
             }
-        })
-        document.getElementById("scoreboard").style.display = "block";
+            
+            // Check and update lane running
+            if (k.startsWith("lane_running")) {
+                lane_running[k.replace("lane_running","")]=s[k];
+            }
+            
+            // Check for lane time blank
+            if(k.startsWith("lane_time")){
+                lane_time_blank[k.replace("lane_time","")] = (s[k].trim() == "");
+            }
+            
+            // Check for lane place blank
+            if(k.startsWith("lane_place")){
+                lane_place_blank[k.replace("lane_place","")] = (s[k].trim() == "");
+            }            
+            // Check for lane name blank
+            if(k.startsWith("lane_name")){
+                lane_name_blank[k.replace("lane_name","")] = (s[k].trim() == "");
+            }
 
+        })
+        
+        // Fill in the running time
+        if ("running_time" in s) {
+            for (var i=1; i <= 8; i++) {
+                if (lane_running[i] || false){
+                    document.getElementById("lane_time"+i).innerHTML = s["running_time"];
+                }
+            }
+        }
+
+        // Check for new heat or event
+        if ("current_event" in s){
+            if (s["current_event"] != last_event){
+                last_event = s["current_event"];
+                current_state = 1; // Intro
+            }
+        }
+        if ("current_heat" in s){
+            if (s["current_heat"] != last_heat){
+                last_heat = s["current_heat"];
+                current_state = 1; // Intro
+            }
+        }
+        
+        // Check for all lanes done
+        // ToDo: (running == true) || ((place == "") && (time != ""))
+        if (current_state != 1) {
+            var all_done = true;
+            for (var i=1;i<=8;i++){
+                if (((i in lane_running) && lane_running[i]) ||
+                   (((i in lane_place_blank) && lane_place_blank[i] &&
+                    ((i in lane_time_blank) && !lane_time_blank[i])))) 
+                {
+                    all_done = false;
+                    break;
+                }
+            }
+            if (all_done) current_state = 3; // Results
+        }
+        
+        // If there are no names, don't do intro or results
+        no_names = true;
+        if ((current_state == 1) || (current_state == 3)) {
+            for (var i=1;i<=8;i++){
+                if ((i in lane_name_blank) && !lane_name_blank[i]) 
+                {
+                    no_names = false;
+                    break;
+                }
+            }
+        }
+        
+        // Check for any lanes running
+        for (var i=1; i<=8; i++) {
+            if (lane_running[i]||false) {
+                current_state = 2; // Running
+                break;
+            }
+        }
+        
+        if (current_state != last_state) {
+            switch (current_state){
+                case 0: // Hidden
+                    mode_to_hidden();
+                    break;
+                case 1: // Intro 
+                    if (no_names) {
+                        mode_to_running();
+                    } else {
+                        mode_to_intro();
+                    }
+                    setTimeout (function() {
+                        if (current_state == 1) {
+                            mode_to_hidden();
+                        }
+                    }, 20000);
+                    break;
+                case 2: // Running
+                    mode_to_running();
+                    break;
+                case 3: // Results
+                    if (no_names) {
+                        mode_to_running();
+                        // Pause updates to scoreboard for 10 seconds
+                        scoreboard_paused = true;
+                        setTimeout (function() {scoreboard_paused = false;}, 10000);
+                    } else {
+                        mode_to_results();
+                    }
+                    setTimeout (function() {
+                        if (current_state == 3) {
+                            mode_to_hidden();
+                        }
+                    }, 20000);
+                    break;
+            }
+            last_state = current_state;
+        }
+                
+        document.getElementById("scoreboard").style.display = "block";
+        
+        s={};
     });
     
 </script>
