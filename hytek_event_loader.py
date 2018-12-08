@@ -69,7 +69,7 @@ class HytekEventLoader ():
         for row in reader:
             if "HY-TEK's MEET MANAGER 4.0" in row[1]:
                 column_offset = 6
-            elif "HY-TEK's MEET MANAGER 5.0" in row[1]:
+            else: #elif "HY-TEK's MEET MANAGER 5.0" in row[1]:  # or 7.0, etc.
                 column_offset = 8
             
             # Hack to remove whitespaces
