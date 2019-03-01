@@ -1,0 +1,161 @@
+.content_outer{
+    width: 1920;
+    height: 1080;
+    position: relative;
+    z-index: 100;
+}
+
+.content_title_block{
+    width: 640px;
+    # position: relative;
+    position: absolute;
+    left: 25;
+    bottom: 25;
+}
+
+.content_meet_title{
+    font-family: 'Overpass Mono', monospace;
+    font-size: 30px;
+    color: #000000;
+    background-color: #87bdd8;
+    padding-top: 5px;
+    padding-left: 30px;
+}
+
+.content_event_name{
+    font-family: 'Overpass Mono', monospace;
+    color: #cfe0e8;
+    font-size: 24px;
+    background-color: #505050;
+    padding-left: 30px;
+}
+
+.content_meet_date{
+    font-family: 'Overpass Mono', monospace;
+    font-size: 26px;
+    color: #000000;
+    background-color: #daebe8;
+    padding-left: 30px;
+}
+
+.content_event_number{
+    font-family: 'Overpass Mono', monospace;
+    font-size: 32px;
+    color: #000000;
+    background-color: #9d238f;
+    width: 370px;
+    float: left;
+    padding-left: 30px;
+}
+
+.content_heat_number{
+    font-family: 'Overpass Mono', monospace;
+    font-size: 32px;
+    color: #000000;
+    background-color: #9d238f;
+    width: 400px;
+    float: left;
+}
+
+.content_scoreboard{
+    font-family: 'Overpass Mono', monospace;
+    font-size: 32px;
+    color: #000000;
+    position: absolute;
+    bottom: 25;
+    right: 25;
+    transition: opacity 0.5s;
+}
+
+.content_scoreboard_ad{
+    width: 400px;
+    margin-right: 20px;
+    display: inline-block;
+    transition: opacity 0.2s;
+}
+
+.content_scoreboard_table{
+    display: inline-block;
+}
+
+.scoreboard_table{
+    border-spacing:0;
+    table-layout:fixed;
+}
+
+table.scoreboard_table td{
+    overflow: hidden;
+    white-space: pre;
+    max-width: 0px;
+    width: 0px;
+}
+
+table.scoreboard_table th{
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.scoreboard_title{
+    font-family: 'Overpass Mono', monospace;
+    color: #000000;
+    font-size: 24px;
+    background-color: #87bdd8;
+    width: 100%;
+    text-align: center;
+}
+
+.scoreboard_header{
+    font-family: 'Overpass Mono', monospace;
+    color: #000000;
+    font-size: 24px;
+    background-color: #daebe8;
+}
+
+.scoreboard_row_odd{
+    font-family: 'Overpass Mono', monospace;
+    color: #000000;
+    font-size: 24px;
+    background-color: #b7d7e8;
+}
+
+.scoreboard_row_eve{
+    font-family: 'Overpass Mono', monospace;
+    color: #000000;
+    font-size: 24px;
+    background-color: #cfe0e8;
+}
+
+.anim{
+    transition: width 0.5s, max-width 0.5s;
+}
+
+.scoreboard_name_col{
+    width: 400px;
+    max-width: 400px;
+}
+
+.scoreboard_place_col{
+    width: 80px;
+    max-width: 80px;
+}
+
+.scoreboard_time_col{
+    width: 150px;
+    max-width: 150px;
+}
+
+.background{
+    background-color: #999999;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1920;
+    height: 1080;
+    z-index: -100;
+}
+
+.controls{
+    position: fixed;
+    top: 10;
+    left: 10;
+}
