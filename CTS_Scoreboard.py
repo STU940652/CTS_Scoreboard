@@ -23,7 +23,8 @@ settings = {
     'meet_title': '',
     'serial_port': 'COM1',
     'username': 'admin',
-    'password': 'password'
+    'password': 'password',
+    'ad_url': 'ad/Stay_Puft.jpeg'
     }
 in_file = None
 out_file = None
@@ -317,12 +318,18 @@ def route_settings():
     comm_port_list = [(port, "%s: %s" % (port,desc)) for port, desc, id in serial.tools.list_ports.comports()]
     if settings['serial_port'] not in [port for port,desc in comm_port_list]:
         comm_port_list.insert(0, (settings['serial_port'], settings['serial_port']))
+        
+    ad_url_list = ['']
+    for dirpath, dir, file in os.walk(os.path.join("static", "ad")):
+        ad_url_list.extend(file)
  
     return flask.render_template('settings.html', 
                 meet_title=settings['meet_title'], 
                 serial_port=settings['serial_port'],
                 serial_port_list=comm_port_list,
-                user_name=settings['username'])
+                user_name=settings['username'],
+                ad_url_list = ad_url_list,
+                ad_url=settings['ad_url'])
                 
 @app.route('/schedule_clear')
 @flask_login.login_required
@@ -396,6 +403,11 @@ def route_site_map():
     # links is now a list of url, endpoint tuple
     links.sort(key=lambda a: '_' if (a[1] == 'Site List') else a[1])
     return flask.render_template('site_map.html', links=links)
+    
+
+@app.context_processor
+def inject_ad():
+    return dict(ad_url="ad/"+settings['ad_url'])
     
 # callback to reload the user object        
 @login_manager.user_loader

@@ -98,6 +98,31 @@ function password_check(form) {
     
     <div class="row"><div class="col-lg-6"><form action="/settings" method="POST">
         <div class="input-group">
+            <label for="ad_url">Ad Image</label>
+            <div class="input-group">
+                <select id="ad_url"
+                    name="ad_url"
+                    class="form-control"
+                    oninput="document.getElementById('ad_url_submit').disabled=false;">
+                {% for url in ad_url_list %}
+                    {% if url == ad_url %}
+                        <option value="{{url}}" selected>{{url}}</option>
+                    {% else %}
+                        <option value="{{url}}">{{url}}</option>
+                    {% endif %}
+                {% endfor %}
+                </select>
+                <span class="input-group-btn">
+                    <button class="btn btn-default" type="submit" id="ad_url_submit" disabled>Update</button>
+                </span>
+            </div>
+        </div>
+    </form></div></div> 
+    {% if ad_url %}
+        <img src="{{url_for('static', filename='ad/'+ad_url)}}" width='400px'/>
+    {% endif %}
+    <div class="row"><div class="col-lg-6"><form action="/settings" method="POST">
+        <div class="input-group">
             <label for="serial_port">Serial Port</label>
             <div class="input-group">
                 <select id="serial_port"
