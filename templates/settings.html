@@ -35,10 +35,10 @@
 
 <script>
 function password_check(form) {
-    if (form.password1.value.length > 3) {
+    if (form.password.value.length > 3) {
         document.getElementById('password_verify').style.visibility='visible';
     
-        if (form.password1.value == form.password2.value) {
+        if (form.password.value == form.password2.value) {
             document.getElementById('password_submit').disabled = false;
         } else {
             document.getElementById('password_submit').disabled = true;
@@ -160,9 +160,9 @@ function password_check(form) {
     </form></div></div>
     <div class="row"><div class="col-md-4"><form action="/settings" method="POST">
         <div class="input-group">
-            <label for="password1">Change Password</label>
-            <input name="password1" 
-                id="password1"
+            <label for="password">Change Password</label>
+            <input name="password" 
+                id="password"
                 type="password" 
                 placeholder="New Password"
                 class="form-control" 
