@@ -104,6 +104,7 @@ function password_check(form) {
                     name="ad_url"
                     class="form-control"
                     oninput="document.getElementById('ad_url_submit').disabled=false;">
+				<option value="" selected>-- None --</option>
                 {% for url in ad_url_list %}
                     {% if url == ad_url %}
                         <option value="{{url}}" selected>{{url}}</option>
@@ -118,7 +119,7 @@ function password_check(form) {
             </div>
         </div>
     </form></div></div> 
-    {% if ad_url %}
+    {% if ad_url and (ad_url != '') %}
         <img src="{{url_for('static', filename='ad/'+ad_url)}}" width='400px'/>
     {% endif %}
     <div class="row"><div class="col-lg-6"><form action="/settings" method="POST">

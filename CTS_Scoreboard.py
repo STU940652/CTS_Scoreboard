@@ -24,7 +24,7 @@ settings = {
     'serial_port': 'COM1',
     'username': 'admin',
     'password': 'password',
-    'ad_url': 'ad/Stay_Puft.jpeg'
+    'ad_url': ''
     }
 in_file = None
 out_file = None
@@ -319,7 +319,7 @@ def route_settings():
     if settings['serial_port'] not in [port for port,desc in comm_port_list]:
         comm_port_list.insert(0, (settings['serial_port'], settings['serial_port']))
         
-    ad_url_list = ['']
+    ad_url_list = []
     for dirpath, dir, file in os.walk(os.path.join("static", "ad")):
         ad_url_list.extend(file)
  
@@ -407,7 +407,7 @@ def route_site_map():
 
 @app.context_processor
 def inject_ad():
-    return dict(ad_url="ad/"+settings['ad_url'])
+    return dict(ad_url=settings['ad_url'])
     
 # callback to reload the user object        
 @login_manager.user_loader
