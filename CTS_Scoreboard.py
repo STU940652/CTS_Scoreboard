@@ -257,6 +257,16 @@ def ws_scoreboard():
     if(main_thread is None):
         main_thread = socketio.start_background_task(target=main_thread_worker)
 
+    update={}
+    update["current_event"] = str(last_event_sent[0])
+    update["current_heat"] = str(last_event_sent[1])
+    update["event_name"] = event_info.get_event_name(last_event_sent[0])
+    
+    for i in range(1,11):
+        update["lane_name%i" % i] = event_info.get_display_string(last_event_sent[0], last_event_sent[1], i)
+
+    socketio.emit('update_scoreboard', update, namespace='/scoreboard')
+
 @socketio.on('next_heat', namespace='/scoreboard')
 def ws_next_heat(d):
     global last_event_sent
