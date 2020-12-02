@@ -1,5 +1,6 @@
 import csv
 import pickle
+import traceback
 
 # 6 #1 Girls 8 & Under 100 Yard Medley Relay
 # 7 #1   ...   (Girls 8 & Under 100 Yard Medley Relay)
@@ -66,12 +67,7 @@ class HytekEventLoader ():
         
     def load_from_file( self, schedule_file):
         reader = csv.reader( schedule_file)
-        for row in reader:
-            if "HY-TEK's MEET MANAGER 4.0" in row[1]:
-                column_offset = 6
-            else: #elif "HY-TEK's MEET MANAGER 5.0" in row[1]:  # or 7.0, etc.
-                column_offset = 8
-            
+        for row in reader:           
             # Hack to remove whitespaces
             for i in range(len(row)):
                 row[i]=row[i].strip()
@@ -83,16 +79,26 @@ class HytekEventLoader ():
             event_number = int(event_number.strip())
             self.event_names[event_number] = event_name.strip()
             
-            lane_column = row.index("Lane",92,107)+column_offset
+            lane_header = row.index("Lane",60,107)
+            column_offset = 6
+            while (column_offset < 9):
+                try:
+                    int(row[lane_header+column_offset])
+                except ValueError:
+                    column_offset += 1
+                    continue
+                break
+            
+            lane_column = lane_header+column_offset
             heat_number = int(row[lane_column-1].split()[1])            
             lane = int(row[lane_column])
-            team = row[row.index("Team",92,107)+column_offset]
+            team = row[row.index("Team",lane_header,107)+column_offset]
 
-            if "Name" in row[92:107]:   
+            if "Name" in row[lane_header:107]:   
                 # Indv
-                name = ' '.join(reversed(row[row.index("Name",92,107)+column_offset].split(','))).strip()
+                name = ' '.join(reversed(row[row.index("Name",lane_header,107)+column_offset].split(','))).strip()
                 display_string = (team + '    ')[:4] + ' ' + name
-            elif "Relay" in row[92:107]:
+            elif "Relay" in row[lane_header:107]:
                 # Relay
                 display_string = team
             else:
@@ -135,5 +141,6 @@ class HytekEventLoader ():
         #    pass
             
 if __name__ == "__main__":
-    s = HytekEventLoader("mm4heatsheet3col.csv")
+    import sys
+    s = HytekEventLoader(sys.argv[1])
     print (s.events)

@@ -306,7 +306,11 @@ def route_settings():
             # if user does not select file, browser also
             # submit a empty part without filename
             if file and file.filename and file.filename.endswith('.csv'):
-                event_info.load_from_bytestream(file.stream)
+                try:
+                    event_info.load_from_bytestream(file.stream)
+                except:
+                    return traceback.format_exc()
+
                 settings['event_info'] = event_info.to_object()
                 send_event_info()
                 modified = True
