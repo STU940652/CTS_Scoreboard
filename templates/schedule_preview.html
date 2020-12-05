@@ -44,31 +44,61 @@
 
 
     <div class="row"><div class="col-lg-8">
-    {% for event, heat in event_heat %}
-        <table class="table table-hover">
-            <thead><tr><th scope="col">Event {{event}}</th><th scope="col">Heat {{heat}}</th><th>
-            {% if event in event_names %}
-                {{ event_names[event] }}
-            {% else %}
-                &nbsp;
-            {% endif %}
-            </th></tr></thead>
-            {% for lane in events[(event, heat)] %}
-                <tr><td></td><td>{{lane}}</td><td>{{events[(event, heat)][lane]}}</td></tr>
-            {% endfor %}
-        </table> 
-        <br/>
-    {% endfor %}
-    
+    <form id="event_form" action="/schedule_preview" method="post">
+        {% for event, heat in event_heat %}
+            <table class="table table-hover">
+                <thead><tr><th scope="col">Event {{event}}</th><th scope="col">Heat {{heat}}</th>
+                <th>
+                    {% if event in event_names %}
+                        {{ event_names[event] }}
+                    {% else %}
+                        &nbsp;
+                    {% endif %}
+                </th>
+                {% if show_combine_select %}
+                    <th>
+                        <select name="combine_{{event}}_{{heat}}" id="combine_{{event}}_{{heat}}">
+                            <option value="">Not Combined</option>
+                            {% for target_event, target_heat in event_heat %}
+                                <option value="{{target_event}},{{target_heat}}" 
+                                {% if ((event, heat) in combined) and (combined[(event, heat)] == (target_event, target_heat)) %}
+                                selected
+                                {% endif %}
+                                >Event {{target_event}} Heat {{target_heat}}</option>
+                            {% endfor %}
+                        </select>
+                    </th>
+                {% endif %}
+                </tr></thead>
+                {% for lane in events[(event, heat)] %}
+                    <tr><td></td><td>{{lane}}</td><td>{{events[(event, heat)][lane]}}</td></tr>
+                {% endfor %}
+            </table>
+            <br/>
+        {% endfor %}
+        </form>
     </div></div>
 
     <div class="row">
-        <div class="col-md-4"><form action="/settings">
-            <input type="submit" value="Back" class="btn btn-default"/>
-        </form></div>
-        <div class="col-md-4"><form action="/logout">
-            <input type="submit" value="Log Out" class="btn btn-default"/>
-        </form></div>
+        {% if show_combine_select %}
+            <div class="col-md-4">
+                <input type="button" value="Submit" class="btn btn-default" onclick="document.getElementById('event_form').submit();" />
+            </div>            
+            <div class="col-md-4"><form action="/schedule_preview">
+                <input type="submit" value="Cancel" class="btn btn-default"/>
+            </form></div>
+        {% else %}
+            <div class="col-md-4"><form action="/settings">
+                <input type="submit" value="Settings" class="btn btn-default"/>
+            </form></div>
+            <div class="col-md-4"><form action="/combine_events">
+                <input type="submit" value="Combine Events" class="btn btn-default"/>
+            </form></div>
+            <div class="col-md-4"><form action="/logout">
+                <input type="submit" value="Log Out" class="btn btn-default"/>
+            </form></div>
+        {% endif %}
+
     </div>
 </div>
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->

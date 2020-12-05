@@ -349,15 +349,41 @@ def route_schedule_clear():
         json.dump(settings, f, sort_keys=True, indent=4)
     return flask.redirect('/settings')
                 
-@app.route('/schedule_preview')
+@app.route('/combine_events')
+@flask_login.login_required
+def route_combine_events():
+    event_heat = list(event_info.events_uncombined.keys())
+    event_heat.sort()
+    return flask.render_template('schedule_preview.html', 
+                event_heat = event_heat, 
+                event_names = event_info.event_names, 
+                events = event_info.events_uncombined,
+                combined = event_info.combined,
+                show_combine_select = True)
+
+@app.route('/schedule_preview', methods=["GET", "POST"])
 @flask_login.login_required
 def route_schedule_preview():
+    if flask.request.method == 'POST':
+        # Posted from combine events
+        combined = {}
+        for key, value in flask.request.form.items():
+            if key.startswith('combine_') and value.strip():
+                k = key.split('_')
+                v = value.split(',')
+                combined[(int(k[1]), int(k[2]))] = ( int(v[0]), int(v[1]) )
+        event_info.combine_events(combined)
+        settings['event_info'] = event_info.to_object()
+        with open(settings_file, "wt") as f:
+            json.dump(settings, f, sort_keys=True, indent=4)
     event_heat = list(event_info.events.keys())
     event_heat.sort()
     return flask.render_template('schedule_preview.html', 
                 event_heat = event_heat, 
                 event_names = event_info.event_names, 
-                events = event_info.events)
+                events = event_info.events,
+                show_combine_select = False)
+
     
 # somewhere to login
 @app.route("/login", methods=["GET", "POST"])

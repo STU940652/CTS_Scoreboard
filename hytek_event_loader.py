@@ -1,6 +1,7 @@
 import csv
 import pickle
 import traceback
+import copy
 
 # 6 #1 Girls 8 & Under 100 Yard Medley Relay
 # 7 #1   ...   (Girls 8 & Under 100 Yard Medley Relay)
@@ -44,17 +45,21 @@ import traceback
 # 104 DIST
 
 class HytekEventLoader ():
-    event_names = {}
-    events = {}
     max_display_string_length = 0
     
     def __init__( self, file_name = None):
+        self.event_names = {}
+        self.events = {}
+        self.events_uncombined = {}
+        self.combined = {}
         if file_name:
             self.load( file_name)
 
     def clear( self):
         self.event_names.clear()
         self.events.clear()
+        self.events_uncombined = copy.deepcopy(self.events)
+        self.combined.clear()
         self.max_display_string_length = 0
             
     def load( self, file_name):
@@ -66,6 +71,7 @@ class HytekEventLoader ():
         self.load_from_file( [x.decode('utf8') for x in stream])
         
     def load_from_file( self, schedule_file):
+        self.clear()
         reader = csv.reader( schedule_file)
         for row in reader:           
             # Hack to remove whitespaces
@@ -110,37 +116,78 @@ class HytekEventLoader ():
                 self.events[(event_number, heat_number)] = {}
                 
             self.events[(event_number, heat_number)][lane] = display_string
-                
+            
+        self.events_uncombined = copy.deepcopy(self.events)
+    
+    def combine_events(self, combined=None):
+        if combined != None:
+            self.combined=combined
+        self.events = copy.deepcopy(self.events_uncombined)
+        
+        for combine_source, combine_destination in self.combined.items():
+            if (combine_source != combine_destination):
+                for lane in self.events[combine_source]:
+                    self.events[combine_destination][lane] = self.events[combine_source][lane] + '*'
+                del self.events[combine_source]
+        
     def get_event_name( self, event_number):
         try:
             return self.event_names[event_number]
         except:
             return ""
             
-    def get_display_strings( self, event_number, heat_number):
-        try:
-            return self.events[ (event_number, heat_number) ]
-        except:
-            return {}
-            
     def get_display_string( self, event_number, heat_number, lane):
         try:
             return self.events[ (event_number, heat_number) ][lane]
         except:
-            return ""
+            pass
+        return ""
+            
+    def get_display_string_uncombined( self, event_number, heat_number, lane):
+        try:
+            return self.events_uncombined[ (event_number, heat_number) ][lane]
+        except:
+            pass
+        return ""
             
     def to_object( self):
-        return pickle.dumps({"event_names": self.event_names, "events": self.events}, protocol=0).decode('utf8')
+        return pickle.dumps({
+            "event_names": self.event_names, 
+            "events": self.events,
+            "events_uncombined": self.events_uncombined,
+            "combined": self.combined,
+        }, protocol=0).decode('utf8')
         
     def from_object( self, p):
         #try:
             o = pickle.loads(p.encode('utf8'))
             self.event_names = o['event_names']
             self.events = o['events']
+            self.events_uncombined = o['events_uncombined']
+            self.combined = o['combined']
         #except:
         #    pass
             
 if __name__ == "__main__":
     import sys
-    s = HytekEventLoader(sys.argv[1])
-    print (s.events)
+    event_info = HytekEventLoader(sys.argv[1])
+    
+    event_info.combined[(2,1)] = (1,1)
+    event_info.combined[(4,1)] = (3,1)
+    event_info.combined[(6,1)] = (5,1)
+    event_info.combined[(7,1)] = (5,1)
+    event_info.combine_events()
+    
+    event_heat = list(event_info.events.keys())
+    event_heat.sort()
+    for event, heat in event_heat:
+        print ("Event", event, " Heat", heat, end=" ")
+        if event in event_info.event_names:
+            print (event_info.event_names[event])
+        else:
+            print ("")
+
+        lanes = list(event_info.events[(event, heat)].keys())
+        lanes.sort()
+        for lane in lanes:
+            print ("\t", lane, "\t", event_info.events[(event, heat)][lane])
