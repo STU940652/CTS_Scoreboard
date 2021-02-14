@@ -129,6 +129,7 @@ class HytekEventLoader ():
                 for lane in self.events[combine_source]:
                     self.events[combine_destination][lane] = self.events[combine_source][lane] + '*'
                 del self.events[combine_source]
+                self.events[combine_source] = self.events[combine_destination] # This is a copy by reference
         
     def get_event_name( self, event_number):
         try:
