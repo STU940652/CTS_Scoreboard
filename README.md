@@ -37,11 +37,3 @@ The HTML server is [Flask](http://flask.pocoo.org/), and the templates are based
 
  /       Scoreboard display suitable for screen overlay
  /test   Scoreboard display overlayed on a static image for testing.
- 
-## Pips
-pip install flask
-pip install flask_login
-pip install flask_socketio
-pip install PySerial
-(eventlet or gevent and gevent-websocket)
-

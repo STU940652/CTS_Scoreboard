@@ -1,0 +1,6 @@
+flask
+flask_login
+flask_socketio
+PySerial
+gevent
+gevent-websocket
