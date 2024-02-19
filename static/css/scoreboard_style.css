@@ -64,14 +64,14 @@
     position: absolute;
     bottom: 25;
     right: 25;
-    transition: opacity 0.5s;
+/*    transition: opacity 0.5s;*/
 }
 
 .content_scoreboard_ad{
     width: 400px;
     margin-right: 20px;
     display: inline-block;
-    transition: opacity 0.2s;
+/*    transition: opacity 0.2s;*/
 }
 
 .content_scoreboard_table{
@@ -126,7 +126,7 @@ table.scoreboard_table th{
 }
 
 .anim{
-    transition: width 0.5s, max-width 0.5s;
+/*    transition: width 0.5s, max-width 0.5s;*/
 }
 
 .scoreboard_name_col{
