@@ -98,7 +98,10 @@ class HytekEventLoader ():
             lane_column = lane_header+column_offset
             heat_number = int(row[lane_column-1].split()[1])            
             lane = int(row[lane_column])
-            team = row[row.index("Team",lane_header,107)+column_offset]
+            try:
+                team = row[row.index("Team",lane_header,107)+column_offset]
+            except:
+                team = row[[x.strip() for x in row].index("School",lane_header,107)+column_offset]
 
             if "Name" in row[lane_header:107]:   
                 # Indv
